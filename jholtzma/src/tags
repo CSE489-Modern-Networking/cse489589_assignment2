@@ -20,6 +20,7 @@ A_input	sr.c	/^void A_input(packet)$/;"	f
 A_output	abt.c	/^void A_output(message)$/;"	f
 A_output	gbn.c	/^void A_output(message)$/;"	f
 A_output	sr.c	/^void A_output(message)$/;"	f
+A_seqnum	gbn.c	/^int A_seqnum = 0;$/;"	v	typeref:typename:int
 A_timerinterrupt	abt.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
 A_timerinterrupt	gbn.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
 A_timerinterrupt	sr.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
@@ -32,17 +33,22 @@ B_init	sr.c	/^void B_init()$/;"	f	typeref:typename:void
 B_input	abt.c	/^void B_input(packet)$/;"	f
 B_input	gbn.c	/^void B_input(packet)$/;"	f
 B_input	sr.c	/^void B_input(packet)$/;"	f
+B_seqnum	gbn.c	/^int B_seqnum = 0;$/;"	v	typeref:typename:int
 B_transport	simulator.c	/^int B_transport = 0;$/;"	v	typeref:typename:int
+DEFAULT_ACK	gbn.c	/^#define DEFAULT_ACK /;"	d	file:
 FROM_LAYER3	simulator.c	/^#define  FROM_LAYER3 /;"	d	file:
 FROM_LAYER5	simulator.c	/^#define  FROM_LAYER5 /;"	d	file:
 OFF	simulator.c	/^#define  OFF /;"	d	file:
 ON	simulator.c	/^#define  ON /;"	d	file:
 TIMER_INTERRUPT	simulator.c	/^#define  TIMER_INTERRUPT /;"	d	file:
 TRACE	simulator.c	/^int TRACE = 1;             \/* for my debugging *\/$/;"	v	typeref:typename:int
+append_list	list.c	/^void append_list(struct list *ls, struct msg *message){$/;"	f	typeref:typename:void
 application_msgs	simulator.c	/^}application_msgs[1000];$/;"	v	typeref:struct:msg_track[1000]
+checksum	gbn.c	/^int checksum = 0; $/;"	v	typeref:typename:int
 corruptprob	simulator.c	/^float corruptprob = 0.0;   \/* probability that one bit is packet is flipped *\/$/;"	v	typeref:typename:float
 cur_msg_recv	simulator.c	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
 cur_msg_sent	simulator.c	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
+cur_pack	gbn.c	/^struct pkt cur_pack;$/;"	v	typeref:struct:pkt
 delivered	simulator.c	/^  int delivered;$/;"	m	struct:msg_track	typeref:typename:int	file:
 display_usage	simulator.c	/^void display_usage(char *filename)$/;"	f	typeref:typename:void
 event	simulator.c	/^struct event {$/;"	s	file:
@@ -58,7 +64,10 @@ insertevent	simulator.c	/^void insertevent(p)$/;"	f
 isNumber	simulator.c	/^int isNumber(char *input)$/;"	f	typeref:typename:int
 jimsrand	simulator.c	/^float jimsrand()$/;"	f	typeref:typename:float
 lambda	simulator.c	/^float lambda = 0.0;        \/* arrival rate of messages from layer 5 *\/$/;"	v	typeref:typename:float
+last	gbn.c	/^int last;$/;"	v	typeref:typename:int
 lossprob	simulator.c	/^float lossprob = 0.0;       \/* probability that a packet is dropped *\/$/;"	v	typeref:typename:float
+ls	abt.c	/^struct list ls;$/;"	v	typeref:struct:list
+ls	gbn.c	/^list ls; $/;"	v	typeref:typename:list
 main	simulator.c	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
 msg_chars	simulator.c	/^  char msg_chars[20];$/;"	m	struct:msg_track	typeref:typename:char[20]	file:
 msg_track	simulator.c	/^struct msg_track {$/;"	s	file:
@@ -68,14 +77,20 @@ nlost	simulator.c	/^int nlost = 0;              \/* number lost in media *\/$/;"
 nsim	simulator.c	/^int nsim = 0;              \/* number of messages from 5 to 4 so far *\/$/;"	v	typeref:typename:int
 nsimmax	simulator.c	/^int nsimmax = 0;           \/* number of msgs to generate, then stop *\/$/;"	v	typeref:typename:int
 ntolayer3	simulator.c	/^int ntolayer3 = 0;        \/* number sent into layer 3 *\/$/;"	v	typeref:typename:int
+packets	gbn.c	/^struct pkt *packets;$/;"	v	typeref:struct:pkt *
+packets_in_window	gbn.c	/^int packets_in_window;$/;"	v	typeref:typename:int
 pktptr	simulator.c	/^   struct pkt *pktptr;     \/* ptr to packet (if any) assoc w\/ this event *\/$/;"	m	struct:event	typeref:struct:pkt *	file:
+pop_list	list.c	/^list_node *pop_list(struct list *ls){$/;"	f	typeref:typename:list_node *
 prev	simulator.c	/^   struct event *prev;$/;"	m	struct:event	typeref:struct:event *	file:
 printevlist	simulator.c	/^void printevlist()$/;"	f	typeref:typename:void
 read_arg_float	simulator.c	/^float read_arg_float(char c)$/;"	f	typeref:typename:float
 read_arg_int	simulator.c	/^int read_arg_int(char c)$/;"	f	typeref:typename:int
 starttimer	simulator.c	/^void starttimer(AorB,increment)$/;"	f
 stoptimer	simulator.c	/^void stoptimer(AorB)$/;"	f
+sum_checksum	list.c	/^int sum_checksum(struct pkt *p){$/;"	f	typeref:typename:int
 time	simulator.c	/^float time = 0.000;$/;"	v	typeref:typename:float
 tolayer3	simulator.c	/^void tolayer3(AorB,packet)$/;"	f
 tolayer5	simulator.c	/^void tolayer5(AorB,datasent)$/;"	f
+waiting_ack	gbn.c	/^int waiting_ack;$/;"	v	typeref:typename:int
 win_size	simulator.c	/^int win_size;$/;"	v	typeref:typename:int
+window_size	gbn.c	/^int window_size = 0; $/;"	v	typeref:typename:int

@@ -1,8 +1,11 @@
 #include "../include/simulator.h"
+#define TIMEOUT 20.0
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
 #define DEFAULT_ACK 111
+#define A 0
+#define B 1
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
@@ -26,13 +29,17 @@ struct pkt cur_pack;
 struct pkt *packets;
 
 int window_size = 0; 
-int packets_in_window;
-int last;
-int waiting_ack;
+int packets_in_window =0;
+int last = 0;
+int waiting_ack =0 ;
+int nextseq;
 
+int window_start = 0;
+int sender_start = 0;
 
 int A_seqnum = 0;
 int B_seqnum = 0;
+int waiting_pkt = 0;
 
 int checksum = 0; 
 void A_output(message)
@@ -48,32 +55,97 @@ void A_output(message)
 	if (n == NULL) {
 		printf("message is NULL");
 	}
+	if ((last+1)%window_size == window_start) {
+		return;
+	}else if(packets_in_window != 0) {
+		last = (last + 1) % window_size;
+	}
 	strcpy(cur_pack.payload,n->message->data);
 	free(n);
-	cur_pack.seqnum = A_seqnum;
-	cur_pack.acknum = DEFAULT_ACK;
-	cu
+	packets[last].seqnum = A_seqnum;
+	packets[last].acknum = DEFAULT_ACK;
+	packets[last].checksum = checksum = sum_checksum(&cur_pack); 
+	nextseq++;
 
+	packets_in_window++;
+	tolayer3(A,packets[last]);
+	if (window_start == last){
+		starttimer(A,TIMEOUT);
+	}
+	return;	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
   struct pkt packet;
 {
+	if (packet.checksum != sum_checksum(&packet))  {
+		return;
+	}
+	if(packet.acknum != packets[window_start].seqnum) {
+		return;
+	}
+	packets[window_start].seqnum = -1;
+	stoptimer(A);
+	packets_in_window--;
+	if (packets_in_window == 0) {
+		list_node *n = pop_list(&ls);
+		while(n!=NULL){
+				
+			strcpy(packets[last].payload,n->message->data);
+			free(n);
+			packets[last].seqnum = nextseq;
+			packets[last].acknum = DEFAULT_ACK;
+			packets[last].checksum = sum_checksum(&packets[last]);
+		}
+	}
+	else {
+		list_node *n = pop_list(&ls);
+		if (n!=NULL){
+			last = (last + 1) %window_size;
+			strcpy(packets[last].payload,n->message->data);
+			free(n);
 
+			packets[last].seqnum = nextseq;
+			packets[last].acknum = DEFAULT_ACK;
+			packets[last].checksum = sum_checksum(&packets[last]);
+			nextseq++;
+
+			packets_in_window++;
+			tolayer3(A, packets[last]);
+		}
+	}
+	if (window_start != last || packets_in_window == 1) {
+		starttimer(A,TIMEOUT);
+	}
 }
 
 /* called when A's timer goes off */
 void A_timerinterrupt()
 {
 
+printf("\n================================ A_timerinterrupt===================================\n");
+	int i;
+	for (i =window_start; i != last; i=(i+1)%window_size )
+  	{
+		printf("sending seq no:%d\n",packets[i].seqnum);
+  	  	tolayer3(A, packets[i]);
+  	}
+   	printf("sending seq no:%d\n",packets[i].seqnum);
+  	tolayer3(A, packets[i]);
+ 
+	if(window_start != last || packets_in_window==1)
+  	{
+		starttimer(A, TIMEOUT);
+  	}
 }  
 
 /* the following routine will be called once (only) before any other */
 /* entity A routines are called. You can use it to do any initialization */
 void A_init()
 {
-
+	window_size = getwinsize();	
+	packets = calloc(window_start,sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
@@ -82,7 +154,16 @@ void A_init()
 void B_input(packet)
   struct pkt packet;
 {
-
+	if(packet.checksum != sum_checksum(&packet)) {
+		return;
+	}
+	if (packet.seqnum == B_seqnum) {
+		B_seqnum = (B_seqnum +1) % 2;
+		tolayer5(B,packet.payload);
+	}
+	packet.acknum = packet.seqnum;
+	packet.checksum = sum_checksum(&packet);
+	tolayer3(B,packet);
 }
 
 /* the following rouytine will be called once (only) before any other */

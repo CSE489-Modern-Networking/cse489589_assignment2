@@ -51,6 +51,6 @@ struct list {
 void append_list(struct list *ls, struct msg *message);
 
 list_node *pop_list(struct list *ls);
-
+int sum_checksum(struct pkt *p);
 
 #endif
