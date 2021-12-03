@@ -37,4 +37,20 @@ void tolayer5(int AorB, char datasent[]);
 int getwinsize();
 float get_sim_time();
 
+struct list_node {
+	struct msg *message;
+	struct list_node *next;	
+}typedef list_node;
+
+struct list {
+	struct msg *message;
+	struct list_node *back;	
+	struct list_node *front;	
+}typedef list;
+
+void append_list(struct list *ls, struct msg *message);
+
+list_node *pop_list(struct list *ls);
+
+
 #endif

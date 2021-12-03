@@ -1,4 +1,8 @@
 #include "../include/simulator.h"
+<<<<<<< HEAD
+=======
+#include "stdio.h"
+>>>>>>> 9aba447 (list)
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
@@ -16,10 +20,26 @@
 /********* STUDENTS WRITE THE NEXT SEVEN ROUTINES *********/
 
 /* called from layer 5, passed the data to be sent to other side */
+list ls; 
+
+struct pkt *packets;
+
+int window_size = 0; 
+int packets_in_window;
+int last;
+int waiting_ack;
+
 void A_output(message)
   struct msg message;
 {
-
+	append_list(&ls,&message);
+	if (packets_in_window == window_size) {
+		printf("FULL");
+		return;
+	} 
+	
+	list_node *n = pop_list(&ls);
+ 
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
