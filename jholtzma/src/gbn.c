@@ -1,8 +1,5 @@
 #include "../include/simulator.h"
-<<<<<<< HEAD
-=======
 #include "stdio.h"
->>>>>>> 9aba447 (list)
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
