@@ -1,5 +1,8 @@
 #include "../include/simulator.h"
 #include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
+#define DEFAULT_ACK 111
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
@@ -19,6 +22,7 @@
 /* called from layer 5, passed the data to be sent to other side */
 list ls; 
 
+struct pkt cur_pack;
 struct pkt *packets;
 
 int window_size = 0; 
@@ -26,6 +30,11 @@ int packets_in_window;
 int last;
 int waiting_ack;
 
+
+int A_seqnum = 0;
+int B_seqnum = 0;
+
+int checksum = 0; 
 void A_output(message)
   struct msg message;
 {
@@ -36,7 +45,15 @@ void A_output(message)
 	} 
 	
 	list_node *n = pop_list(&ls);
- 
+	if (n == NULL) {
+		printf("message is NULL");
+	}
+	strcpy(cur_pack.payload,n->message->data);
+	free(n);
+	cur_pack.seqnum = A_seqnum;
+	cur_pack.acknum = DEFAULT_ACK;
+	cu
+
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */

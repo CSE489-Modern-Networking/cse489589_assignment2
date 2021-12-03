@@ -36,3 +36,12 @@ list_node *pop_list(struct list *ls){
 	}
 	return front; 
 }	
+
+int sum_checksum(struct pkt *p){
+	if (p ==NULL) return 0;
+	int total = 0;
+	for (int i = 0 ; i < 20; i++){
+		total += p->payload[i];	
+	}
+	return total + p->seqnum + p->acknum;
+}
