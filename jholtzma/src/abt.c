@@ -16,10 +16,17 @@
 /********* STUDENTS WRITE THE NEXT SIX ROUTINES *********/
 
 /* called from layer 5, passed the data to be sent to other side */
+
+
+
+
+
+
+struct list ls;
 void A_output(message)
   struct msg message;
 {
-
+	append_list(&ls,&message);
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
