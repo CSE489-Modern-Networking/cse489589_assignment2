@@ -1,4 +1,6 @@
-#include "../include/simulator.h"
+#include "../include/simulator.h'
+
+"
 #define TIMEOUT 20.0
 #include "stdio.h"
 #include "string.h"
@@ -158,12 +160,14 @@ void B_input(packet)
 		return;
 	}
 	if (packet.seqnum == B_seqnum) {
-		B_seqnum = (B_seqnum +1) % 2;
+		++B_seqnum ;
 		tolayer5(B,packet.payload);
 	}
-	packet.acknum = packet.seqnum;
-	packet.checksum = sum_checksum(&packet);
-	tolayer3(B,packet);
+	else if(packet.seqnum < B_seqnum) {
+		packet.acknum = packet.seqnum;
+		packet.checksum = sum_checksum(&packet);
+		tolayer3(B,packet);
+	}
 }
 
 /* the following rouytine will be called once (only) before any other */
