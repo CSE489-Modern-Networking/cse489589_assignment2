@@ -4,22 +4,18 @@
 #include <stdio.h>
 
 void append_list(struct list *ls, struct msg *message){
-	list_node *n  = calloc(1,sizeof(struct list_node));
+	list_node *n  = malloc(sizeof(struct list_node));
 	if (n == NULL) 
 	{printf("list is NULL\n");return;}
 
+    memcpy(n->message.data ,message->data,20);
 
-	if (strlen(message->data) <= 20) {
-		strcpy(n->message->data,message->data);
-	}else {
-		printf("too big Message");
-		exit(-1);
-	}
 	if (ls->back == NULL) {
 		ls->front = n;
 		ls->back = n;
 		return;
 	}
+
 	ls->back->next = n;
 	ls->back = n;
 }
