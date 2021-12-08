@@ -25,10 +25,11 @@ list_node *pop_list(struct list *ls){
 	
 	if (ls->front == NULL) return NULL;
 	list_node *front = ls->front;
-	ls->front = ls->front->next;
 
 	if (ls->front == NULL) {
 		ls->back = NULL;
+	}else {
+		ls->front = ls->front->next;
 	}
 	return front; 
 }	

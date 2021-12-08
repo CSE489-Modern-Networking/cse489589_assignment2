@@ -53,14 +53,15 @@ void A_output(message)
 	list_node *n = pop_list(&ls);
 	if (n == NULL) {
 		printf("message is NULL");
+		return;
 	}
 	if ((last+1)%window_size == window_start) {
 		return;
 	}else if(packets_in_window != 0) {
 		last = (last + 1) % window_size;
 	}
-	memcpy(packets[last].payload, n->message.data,19);
-	packets[last].payload[18] = n->message.data[19];
+	memcpy(packets[last].payload, n->message.data,20);
+	//packets[last].payload[19] = n->message.data[19];
 	free(n);
 	packets[last].seqnum = nextseq;
 	packets[last].acknum = DEFAULT_ACK;
