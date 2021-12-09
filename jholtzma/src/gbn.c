@@ -1,6 +1,4 @@
-#include "../include/simulator.h'
-
-"
+#include "../include/simulator.h"
 #define TIMEOUT 20.0
 #include "stdio.h"
 #include "string.h"
