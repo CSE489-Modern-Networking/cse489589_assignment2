@@ -1,5 +1,6 @@
 #include "../include/simulator.h"
-#define TIMEOUT 20.0
+#define TIMEOUT 30.0
+
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
@@ -32,19 +33,16 @@ int window_size = 0;
 int packets_in_window =0;
 int last = 0;
 int waiting_ack =0 ;
-int nextseq;
+int nextseq = 0;
 
 int window_start = 0;
-int sender_start = 0;
 
-int A_seqnum = 0;
 int B_seqnum = 0;
-int waiting_pkt = 0;
 
-int checksum = 0; 
 void A_output(message)
   struct msg message;
 {
+
 	append_list(&ls,&message);
 	if (packets_in_window == window_size) {
 		printf("FULL");
@@ -54,17 +52,19 @@ void A_output(message)
 	list_node *n = pop_list(&ls);
 	if (n == NULL) {
 		printf("message is NULL");
+		return;
 	}
 	if ((last+1)%window_size == window_start) {
 		return;
 	}else if(packets_in_window != 0) {
 		last = (last + 1) % window_size;
 	}
-	strcpy(cur_pack.payload,n->message->data);
+	memcpy(packets[last].payload, n->message.data,20);
+	//packets[last].payload[19] = n->message.data[19];
 	free(n);
-	packets[last].seqnum = A_seqnum;
+	packets[last].seqnum = nextseq;
 	packets[last].acknum = DEFAULT_ACK;
-	packets[last].checksum = checksum = sum_checksum(&cur_pack); 
+	packets[last].checksum  = sum_checksum(&packets[last]); 
 	nextseq++;
 
 	packets_in_window++;
@@ -72,7 +72,7 @@ void A_output(message)
 	if (window_start == last){
 		starttimer(A,TIMEOUT);
 	}
-	return;	
+	return ;	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -92,18 +92,20 @@ void A_input(packet)
 		list_node *n = pop_list(&ls);
 		while(n!=NULL){
 				
-			strcpy(packets[last].payload,n->message->data);
+			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 			packets[last].seqnum = nextseq;
 			packets[last].acknum = DEFAULT_ACK;
 			packets[last].checksum = sum_checksum(&packets[last]);
+			nextseq++;
 		}
 	}
 	else {
+		window_start = (window_start+1)%window_size; 
 		list_node *n = pop_list(&ls);
 		if (n!=NULL){
 			last = (last + 1) %window_size;
-			strcpy(packets[last].payload,n->message->data);
+			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 
 			packets[last].seqnum = nextseq;
@@ -145,7 +147,7 @@ printf("\n================================ A_timerinterrupt=====================
 void A_init()
 {
 	window_size = getwinsize();	
-	packets = calloc(window_start,sizeof(struct pkt));
+	packets = malloc(window_size+1 * sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
