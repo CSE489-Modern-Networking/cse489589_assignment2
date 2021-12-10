@@ -76,7 +76,7 @@ void A_output(message)
 	if (window_start == last){
 		starttimer(A,TIMEOUT);
 	}
-	return 0 ;	
+	return  ;	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */

@@ -23,13 +23,14 @@
 #define ACK 111
 #define TIMEOUT 30.0
 
+#define TICKER  30.0
+
 list ls; 
 
 int nil = 0;
 int  sideA = 0;
 int  sideB = 1;
 /* timeout for the timer */
-int ticker = 30.0;
 int duration = 1.0;
 int ackNum = 111;
 
@@ -79,23 +80,21 @@ void A_output(msg)
         if(pkt_in_window!=0){
             last=(last+1)%win;
         }
-        else{
-	  		memcpy(A_packets[last].pi.payload, n->message.data,20);
-	  		free(n);
-	  		A_packets[last].pi.seqnum  = sequence_A;
-	  		A_packets[last].pi.acknum = ackNum;
-	  		A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
-	  		sequence_A++;
-	  		A_packets[last].timeover=curTime+30;
-	  		A_packets[last].ackNum=0;//set ackNum to not received
-	  		pkt_in_window++;//increase the number of packets in the window
-	  		tolayer3(0, A_packets[last].pi);
-	  if(timerOff){
-	    timerOff=false;
-	    starttimer(A,duration);
-	  }
+	  	memcpy(A_packets[last].pi.payload, n->message.data,20);
+	  	free(n);
+	  	A_packets[last].pi.seqnum  = sequence_A;
+	  	A_packets[last].pi.acknum = ackNum;
+	  	A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
+	  	sequence_A++;
+	  	A_packets[last].timeover=curTime+TICKER;
+	  	A_packets[last].ackNum=0;//set ackNum to not received
+	  	pkt_in_window++;//increase the number of packets in the window
+	  	tolayer3(A, A_packets[last].pi);
+	  	if(timerOff){
+	  	  timerOff=false;
+	  	  starttimer(A,duration);
+	  	}
           
-	}
 		 
       }
     }
@@ -127,13 +126,43 @@ void A_input(packet)
 					
 					
 					set_packet(&sr->pi,sequence_A,ACK);
+					//set_packet(&sr->pi,sequence_A,ACK);
 					sequence_A++;
 					sr->timeover = curTime + TIMEOUT; 
 					sr->ackNum = 0;
 					pkt_in_window++;
 					tolayer3(A,sr->pi);
 				}
+			}else {
+			int i =window_start;	
+			while(i!=last){
+				int new_index = (i+1) % win;
+				if (A_packets[new_index ].ackNum != -1){
+					break;	
+				}
+				pkt_in_window--;	
+				i=new_index;
+//				if (i==last) {
+//					last = i;
+//				}
 			}
+			window_start = (i+1)%win;
+			if (!pkt_in_window) {last = window_start;}
+			struct list_node *n = pop_list(&ls);
+			if (n!=NULL){
+				struct  sr_window *last_pck = &(A_packets[last]);
+				memcpy(last_pck->pi.payload,n->message.data,20);
+				free(n);	
+				set_packet(&last_pck->pi,sequence_A,ACK);
+				last_pck->ackNum =0;	
+				last_pck->timeover=curTime+TICKER;
+				pkt_in_window++;
+				tolayer3(A,last_pck->pi);
+			}
+			}
+		}
+		else if(packet.acknum <= A_packets[window_start].pi.seqnum){
+			
 		}
   }
 
@@ -147,14 +176,14 @@ void A_timerinterrupt(){
     while(i!=last){
       if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
        // printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
-        A_packets[i].timeover=curTime+ticker;
+        A_packets[i].timeover=curTime+TICKER;
         tolayer3(sideA, A_packets[i].pi);
       }
       i=(i+1)%win;
     }
     if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
        // printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
-        A_packets[i].timeover=curTime+ticker;
+        A_packets[i].timeover=curTime+TICKER;
         tolayer3(sideA, A_packets[window_start].pi);
     }
   }
@@ -166,11 +195,11 @@ void A_timerinterrupt(){
 void A_init()
 {
   win = getwinsize();
-  A_packets= malloc(sizeof(struct sr_window) * win);
+  A_packets= calloc(win,sizeof(struct sr_window));
   for(int i=0;i<win;i++){
     A_packets[i].ackNum=0;
   }
-  timerOff = true;
+  timerOff = false;
   starttimer(A,duration);
 }
 
@@ -230,7 +259,7 @@ void B_input(packet)
 void B_init()
 {
   win = getwinsize();
-    B_packets= malloc(sizeof(struct sr_window) * win);
+    B_packets= calloc(win,sizeof(struct sr_window) );
     for(int i=0;i<win;i++)
     {
       B_packets[i].timeover=i;//this is the sequence number here

@@ -12,6 +12,7 @@
 A	gbn.c	/^#define A /;"	d	file:
 A	simulator.c	/^#define   A /;"	d	file:
 A	sr.c	/^#define A /;"	d	file:
+ACK	sr.c	/^#define ACK /;"	d	file:
 A_application	simulator.c	/^int A_application = 0;$/;"	v	typeref:typename:int
 A_init	abt.c	/^void A_init()$/;"	f	typeref:typename:void
 A_init	gbn.c	/^void A_init()$/;"	f	typeref:typename:void
@@ -23,7 +24,6 @@ A_output	abt.c	/^void A_output(message)$/;"	f
 A_output	gbn.c	/^void A_output(message)$/;"	f
 A_output	sr.c	/^void A_output(msg)$/;"	f
 A_packets	sr.c	/^struct sr_window *A_packets;$/;"	v	typeref:struct:sr_window *
-A_seqnum	sr.c	/^int  A_seqnum =0;$/;"	v	typeref:typename:int
 A_timerinterrupt	abt.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
 A_timerinterrupt	gbn.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
 A_timerinterrupt	sr.c	/^void A_timerinterrupt(){$/;"	f	typeref:typename:void
@@ -51,7 +51,9 @@ IsWaiting_pkt	abt.c	/^int IsWaiting_pkt = 0; $/;"	v	typeref:typename:int
 NULL	gbn.c	/^#define NULL /;"	d	file:
 OFF	simulator.c	/^#define  OFF /;"	d	file:
 ON	simulator.c	/^#define  ON /;"	d	file:
+TICKER	sr.c	/^#define TICKER /;"	d	file:
 TIMEOUT	gbn.c	/^#define TIMEOUT /;"	d	file:
+TIMEOUT	sr.c	/^#define TIMEOUT /;"	d	file:
 TIMER_INTERRUPT	simulator.c	/^#define  TIMER_INTERRUPT /;"	d	file:
 TRACE	simulator.c	/^int TRACE = 1;             \/* for my debugging *\/$/;"	v	typeref:typename:int
 ackNum	sr.c	/^  int ackNum;$/;"	m	struct:sr_window	typeref:typename:int	file:
@@ -115,6 +117,7 @@ sequence_A	abt.c	/^int sequence_A = 0; $/;"	v	typeref:typename:int
 sequence_A	sr.c	/^int sequence_A = 0;$/;"	v	typeref:typename:int
 sequence_B	abt.c	/^int sequence_B =0; $/;"	v	typeref:typename:int
 sequence_B	sr.c	/^int sequence_B = 0;$/;"	v	typeref:typename:int
+set_packet	sr.c	/^void set_packet(struct pkt *packet, $/;"	f	typeref:typename:void
 sideA	sr.c	/^int  sideA = 0;$/;"	v	typeref:typename:int
 sideB	sr.c	/^int  sideB = 1;$/;"	v	typeref:typename:int
 sr_window	sr.c	/^struct sr_window{$/;"	s	file:
@@ -123,7 +126,6 @@ state	abt.c	/^int state = 0;$/;"	v	typeref:typename:int
 stoptimer	simulator.c	/^void stoptimer(AorB)$/;"	f
 sum_checksum	list.c	/^int sum_checksum(struct pkt *p){$/;"	f	typeref:typename:int
 temp	sr.c	/^int temp=0;$/;"	v	typeref:typename:int
-ticker	sr.c	/^int ticker = 30.0;$/;"	v	typeref:typename:int
 time	simulator.c	/^float time = 0.000;$/;"	v	typeref:typename:float
 timeover	sr.c	/^  int timeover;$/;"	m	struct:sr_window	typeref:typename:int	file:
 timerOff	sr.c	/^bool timerOff=true;$/;"	v	typeref:typename:bool
