@@ -106,7 +106,32 @@ void A_input(packet)
   struct packet packet;
 {
   if(packet.checksum == sum_checksum(&packet)){
-    if(packet.acknum == A_packets[wi
+    if(packet.acknum == A_packets[window_start].pi.seqnum){
+      A_packets[window_start].ack = 1; 
+      pkt_in_window--;
+      if(pkt_in_window==0){
+	window_start = (window+1) % WINDOW; 
+	last = (last+1)%WINDOW; 
+	if(ls!= NULL){
+	  struct list_node *n = pop_list(&ls);
+	  if(n!=NULL){
+	    memcpy(A_packets[last].pi.payload[i], n->message.data);
+	    free(n); 
+	    A_packets[last].pi.senum = sequence_A; 
+	    A_packets[last].pi.acknum = DEFAULT_ACK; 
+	    A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi); 
+	    sequence_A++; 
+	    A_packets[last].ack = 0;
+	    A_packets[last].timeover = current_time+30; 
+	    pkt_in_window++; 
+	    tolayer3(0, A_packets[last].pi); 
+	  }
+	}
+      }
+      else if(){
+	
+      }
+    }
   }
 }
 
