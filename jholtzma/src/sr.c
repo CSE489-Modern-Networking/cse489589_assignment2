@@ -18,15 +18,17 @@
 #include "stdlib.h"
 #include "stdbool.h"
 
+#define A  1
+#define B  2
 list ls; 
 
-int nil = 0
-int  sideA = 0
-int  sideB = 1
+int nil = 0;
+int  sideA = 0;
+int  sideB = 1;
 /* timeout for the timer */
-int ticker = 30.0
-int duration = 1.0
-int ackNum = 111
+int ticker = 30.0;
+int duration = 1.0;
+int ackNum = 111;
 
 
 /*end*/
@@ -35,8 +37,9 @@ int ackNum = 111
 
 
 struct sr_window{
-  struct packet pi;//packet item
   int ackNum;
+
+  struct pkt pi;//packet item
   int timeover;
 };
 struct sr_window *A_packets;
@@ -57,18 +60,18 @@ float curTime=0;
 int waitng_ack=0;
 bool timerOff=true;
 
-
+int  A_seqnum =0;
 
 
 /* called from layer 5, passed the data to be sent to other side */
 void A_output(msg)
-     struct msgs msg;
+     struct msg msg;
 {
   
   append_list(&ls, &msg);
   // check if the window is full
   if(pkt_in_window != win){
-    struct list_node *n = pop_list(%ls);
+    struct list_node *n = pop_list(&ls);
     if(n != NULL){
       if(((last+1)%win)!=window_start){
         if(pkt_in_window!=0){
@@ -76,9 +79,9 @@ void A_output(msg)
         }
         else{
          
-	  memcpy(A_packets[last].pi.payload, n->message.data);
+	  memcpy(A_packets[last].pi.payload, n->message.data,20);
 	  free(n);
-	  A_packets[last].pi.seqnum  sequence_A;
+	  A_packets[last].pi.seqnum  = sequence_A;
 	  A_packets[last].pi.acknum = ackNum;
 	  A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
 	  A_seqnum++;
@@ -88,7 +91,7 @@ void A_output(msg)
 	  tolayer3(0, A_packets[last].pi);
 	  if(timerOff){
 	    timerOff=false;
-	    starttimer(A,INTERVAL);
+	    starttimer(A,duration);
 	  }
           
 	}
@@ -103,28 +106,27 @@ void A_output(msg)
 
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
-  struct packet packet;
+  struct pkt packet;
 {
   if(packet.checksum == sum_checksum(&packet)){
-    if(packet.acknum == A_packets[wi
   }
 }
 
 /* called when sideA's timer goes off */
-void A_timintrupt(){
+void A_timerinterrupt(){
   curTime += duration;
   if(pkt_in_window != 0){
     int i=window_start;
     while(i!=last){
       if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
-        printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
-        A_packets[i]->timeover=curTime+ticker;
+       // printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
+        A_packets[i].timeover=curTime+ticker;
         tolayer3(sideA, A_packets[i].pi);
       }
       i=(i+1)%win;
     }
     if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
-        printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
+       // printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
         A_packets[i].timeover=curTime+ticker;
         tolayer3(sideA, A_packets[window_start].pi);
     }
