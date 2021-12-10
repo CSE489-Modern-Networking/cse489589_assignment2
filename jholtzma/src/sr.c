@@ -110,74 +110,72 @@ void set_packet(struct pkt *packet,
 
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
-  struct pkt packet;
+struct pkt packet; 
 {
-
-  if(packet.checksum == sum_checksum(&packet)){
-    if (packet.acknum == A_packets[window_start].pi.seqnum){
-      A_packets[window_start].ackNum=1;
-      pkt_in_window--;
-      if (pkt_in_window == 0) {
-	window_start = (window_start+1)%win;
-	last = (last+1) % win;
-	if (ls.front != NULL) {
-	  struct  sr_window *sr = &A_packets[last];
-					
-					
-	  set_packet(&sr->pi,sequence_A,ACK);
-	 
-	  sequence_A++;
-	  sr->timeover = curTime + TIMEOUT; 
-	  sr->ackNum = 0;
-	  pkt_in_window++;
-	  tolayer3(A,sr->pi);
-	}else{
-
-	  timerOff = true;
-	  stoptimer(A);
-	}
-      }else {
-	int i =window_start;	
-	while(i!=last){
-	  int new_index = (i+1) % win;
-	  if (A_packets[new_index ].ackNum != 1){
-	    break;	
-	  }
-	  pkt_in_window--;	
-	  i=new_index;
-	  
-	}
-	window_start = (i+1)%win;
-	if (pkt_in_window== 0) {last = window_start;}
-	struct list_node *n = pop_list(&ls);
-	if (n!=NULL){
-	  struct  sr_window *last_pck = &(A_packets[last]);
-	  memcpy(last_pck->pi.payload,n->message.data,20);
-	  free(n);	
-	  set_packet(&last_pck->pi,sequence_A,ACK);
-	  sequence_A++; 
-	  last_pck->ackNum =0;	
-	  last_pck->timeover=curTime+TICKER;
-	  pkt_in_window++;
-	  tolayer3(A,last_pck->pi);
-	}
-      }
-    }
-    else if(packet.acknum > A_packets[window_start].pi.seqnum) {
-      int i = window_start;
-      while (i!=last) {
-	struct sr_window *cur_pack = &A_packets[(i+1)+win];		
-	if (cur_pack->pi.seqnum == packet.acknum ) { 
-	  cur_pack->ackNum = 1; 
-	  break;
-	}
-	i = (i + 1) % win;
-      }
-    }
-  
-
+  if (packet.checksum != sum_checksum( & packet)) {
+    return;
   }
+  else if (packet.acknum > A_packets[window_start].pi.seqnum) {
+    int i = window_start;
+    while (i != last) {
+      struct sr_window * cur_pack = & A_packets[(i + 1) + win];
+      if (cur_pack -> pi.seqnum == packet.acknum) {
+        cur_pack -> ackNum = 1;
+        break;
+      }
+      i = (i + 1) % win;
+    }
+  }
+  else if (packet.acknum == A_packets[window_start].pi.seqnum) {
+    A_packets[window_start].ackNum = 1;
+    pkt_in_window--;
+    if (pkt_in_window == 0) {
+      window_start = (window_start + 1) % win;
+      last = (last + 1) % win;
+      if (ls.front != NULL) {
+        struct sr_window * sr = & A_packets[last];
 
+        set_packet( & sr -> pi, sequence_A, ACK);
+
+        sequence_A++;
+        sr -> timeover = curTime + TIMEOUT;
+        sr -> ackNum = 0;
+        pkt_in_window++;
+        tolayer3(A, sr -> pi);
+      } else {
+
+        timerOff = true;
+        stoptimer(A);
+      }
+    } else {
+      int i = window_start;
+      while (i != last) {
+        int new_index = (i + 1) % win;
+        if (A_packets[new_index].ackNum != 1) {
+          break;
+        }
+        pkt_in_window--;
+        i = new_index;
+
+      }
+      window_start = (i + 1) % win;
+      if (pkt_in_window == 0) {
+        last = window_start;
+      }
+      struct list_node * n = pop_list( & ls);
+      if (n != NULL) {
+        struct sr_window * last_pck = & (A_packets[last]);
+        memcpy(last_pck -> pi.payload, n -> message.data, 20);
+        free(n);
+        set_packet( & last_pck -> pi, sequence_A, ACK);
+        sequence_A++;
+        last_pck -> ackNum = 0;
+        last_pck -> timeover = curTime + TICKER;
+        pkt_in_window++;
+        tolayer3(A, last_pck -> pi);
+      }
+    }
+  }
 }
 
 /* called when sideA's timer goes off */
