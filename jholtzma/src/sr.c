@@ -18,8 +18,8 @@
 #include "stdlib.h"
 #include "stdbool.h"
 
-#define A  1
-#define B  2
+#define A  0
+#define B  1
 #define ACK 111
 #define TIMEOUT 30.0
 
@@ -90,11 +90,10 @@ void A_output(msg)
 	  	A_packets[last].ackNum=0;//set ackNum to not received
 	  	pkt_in_window++;//increase the number of packets in the window
 	  	tolayer3(A, A_packets[last].pi);
-	  	if(timerOff){
+	  	if(timerOff == true){
 	  	  timerOff=false;
 	  	  starttimer(A,duration);
 	  	}
-          
 		 
       }
     }
@@ -132,6 +131,10 @@ void A_input(packet)
 					sr->ackNum = 0;
 					pkt_in_window++;
 					tolayer3(A,sr->pi);
+				}else{
+
+					timerOff = true;
+					stoptimer(A);
 				}
 			}else {
 			int i =window_start;	
@@ -181,11 +184,14 @@ void A_input(packet)
 
 /* called when sideA's timer goes off */
 void A_timerinterrupt(){
+
+        printf("\n================================ Inside A_timerinterrupt===================================\n");
   curTime += duration;
   if(pkt_in_window != 0){
     int i=window_start;
     while(i!=last){
       if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
+
        // printf("sending seq no:%d\newNode",A_packets[i].pi.seqN);
         A_packets[i].timeover=curTime+TICKER;
         tolayer3(sideA, A_packets[i].pi);
@@ -208,10 +214,10 @@ void A_init()
   win = getwinsize();
   A_packets= calloc(win,sizeof(struct sr_window));
   for(int i=0;i<win;i++){
-    A_packets[i].ackNum=0;
+    A_packets[i].ackNum==0;
   }
   timerOff = false;
-  starttimer(A,duration);
+  starttimer(0,duration);
 }
 
 /* Note that with simplex transfer from a-to-sideB, there is no B_output() */
@@ -275,4 +281,5 @@ void B_init()
     {
       B_packets[i].timeover=i;//this is the sequence number here
     }
+
 }
