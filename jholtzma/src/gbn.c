@@ -1,4 +1,8 @@
 #include "../include/simulator.h"
+
+
+#define NULL 0
+
 #define TIMEOUT 30.0
 
 #include "stdio.h"
@@ -72,7 +76,7 @@ void A_output(message)
 	if (window_start == last){
 		starttimer(A,TIMEOUT);
 	}
-	return ;	
+	return 0 ;	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -105,6 +109,7 @@ void A_input(packet)
 		list_node *n = pop_list(&ls);
 		if (n!=NULL){
 			last = (last + 1) %window_size;
+			//packets[last];
 			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 
@@ -127,14 +132,15 @@ void A_timerinterrupt()
 {
 
 printf("\n================================ A_timerinterrupt===================================\n");
-	int i;
-	for (i =window_start; i != last; i=(i+1)%window_size )
+	int i  =window_start;
+	while ( i != last  )
   	{
 		printf("sending seq no:%d\n",packets[i].seqnum);
   	  	tolayer3(A, packets[i]);
+		i=(i+1)%window_size;
   	}
    	printf("sending seq no:%d\n",packets[i].seqnum);
-  	tolayer3(A, packets[i]);
+ 	tolayer3(A, packets[i]);
  
 	if(window_start != last || packets_in_window==1)
   	{
@@ -147,7 +153,7 @@ printf("\n================================ A_timerinterrupt=====================
 void A_init()
 {
 	window_size = getwinsize();	
-	packets = malloc(window_size+1 * sizeof(struct pkt));
+	packets = malloc(window_size * sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
@@ -157,13 +163,14 @@ void B_input(packet)
   struct pkt packet;
 {
 	if(packet.checksum != sum_checksum(&packet)) {
+		printf("packed_error");
 		return;
 	}
 	if (packet.seqnum == B_seqnum) {
 		++B_seqnum ;
 		tolayer5(B,packet.payload);
 	}
-	else if(packet.seqnum < B_seqnum) {
+	else if (packet.seqnum < B_seqnum) {
 		packet.acknum = packet.seqnum;
 		packet.checksum = sum_checksum(&packet);
 		tolayer3(B,packet);
