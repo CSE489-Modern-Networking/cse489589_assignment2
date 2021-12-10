@@ -150,7 +150,7 @@ printf("\n================================ A_timerinterrupt=====================
 void A_init()
 {
 	window_size = getwinsize();	
-	packets = malloc(window_size * sizeof(struct pkt));
+	packets = calloc(window_size , sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
