@@ -51,12 +51,10 @@ void A_output(message)
     cur_pack.seqnum = sequence_A;
     cur_pack.acknum = DEFAULT_ACK;
     cur_pack.checksum = sum_checksum(&cur_pack); 
-    tolayer3(sequence_A,cur_pack); 
-    starttimer(sequence_A,20);
+    tolayer3(0,cur_pack); 
+    starttimer(0,20);
   }
-  else{
-    return 0;
-  }
+
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -66,8 +64,8 @@ void A_input(packet)
  
   if(packet.checksum == sum_checksum(&packet)) {
     if(packet.acknum == sequence_A){
-          sequence_A = (sequence_A + 1) % 2; 
-	  state = IsWaiting_pkt; 
+      sequence_A = (sequence_A == 0)? 1: 0; 
+      state = IsWaiting_pkt; 
     }
 
   }
@@ -78,8 +76,8 @@ void A_input(packet)
 void A_timerinterrupt()
 {
   if(state == IsWaiting_ack){
-    tolayer3(sequence_A, cur_pack); 
-    starttimer(sequence_A,20); 
+    tolayer3(0, cur_pack); 
+    starttimer(0,20); 
   }
   
 }  
@@ -102,14 +100,14 @@ void B_input(packet)
   if(packet.checksum == sum_checksum(&packet)  )
     {
       if(packet.seqnum == sequence_B){
-	sequence_B = (sequence_B + 1 ) % 2; 
-	tolayer5(sequence_B, packet.payload); 
+	sequence_B = (sequence_B == 0)? 1:0; 
+	tolayer5(1, packet.payload); 
       }
    
     
       packet.acknum = packet.seqnum; 
       packet.checksum = sum_checksum(&packet); 
-      tolayer3(sequence_B,packet);
+      tolayer3(1,packet);
       
    
     }

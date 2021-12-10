@@ -28,20 +28,11 @@ int ticker = 30.0
 int duration = 1.0
 int ackNum = 111
 
-/*All function declarations*/
-int calcCkSm(struct packet *pk);
-void msgAppend(struct msgs *msg);
-struct node *msgDelete();
+
 /*end*/
 
-/*buffer*/
-struct node {
-  struct msgs msg;
-  struct node *next;
-};
-struct node *list_head = nil;
-struct node *list_end = nil;
-/*end*/
+
+
 
 struct sr_window{
   struct packet pi;//packet item
@@ -58,122 +49,65 @@ int last=0;
 int last_B=0;
 
 //sequence numbers
-int A_seqnum = 0;
-int B_seqnum = 0;
+int sequence_A = 0;
+int sequence_B = 0;
 int win=0;
 int temp=0;
 float curTime=0;
 int waitng_ack=0;
-bool timerOff=TRUE;
+bool timerOff=true;
 
-/******************************Helper Functions*********************************/
-int calcCkSm(struct packet *pk){
-  int ckSm = 0;
-  if(pk != nil){
-    for (int i=0; i<20; i++){
-      ckSm += (unsigned char)pk->payload[i];
-    }
-    ckSm += pk->seqN;
-    ckSm += pk->ackN;
-  }
-  return ckSm;
-}
 
-// void msgAppend(struct msgs *msg){
-//   /*allocate memory*/
-//   struct node *newNode = malloc(sizeof(struct node));
-//   if(newNode != nil) {
-//     newNode->next = nil;
-//     /*copy packet*/
-//     for(int i = 0; i < 20; ++i) {
-//       newNode->msg.data[i] = msg->data[i];
-//     }
-//     /* if list empty, just add into the list*/
-//     if(list_end != nil){
-//       /* otherwise, add at the end*/
-//       list_end->next = newNode;
-//       list_end = newNode;
-//     }
-//     else{
-//       list_head = newNode;
-//       list_end = newNode;
-//       return;
-//     }
-//   }
-//   else{
-//     printf("no enough memory\newNode");
-//     return;
-//   }
-// }
 
-// struct node *msgDelete(){
-//   struct node *pk;
-//   /* if the list is empty, return nil*/
-//   if(list_head != nil) {
-//     /* retrive the first node*/
-//     pk = list_head;
-//     list_head = pk->next;
-//     if(list_head == nil) {
-//       list_end = nil;
-//     }
-//     return pk;
-//   }
-//   return nil;
-// }
 
 /* called from layer 5, passed the data to be sent to other side */
 void A_output(msg)
-  struct msgs msg;
+     struct msgs msg;
 {
-  struct node *newNode;
+  
   append_list(&ls, &msg);
   // check if the window is full
   if(pkt_in_window != win){
-    n = pop_list(%ls);
+    struct list_node *n = pop_list(%ls);
     if(n != NULL){
       if(((last+1)%win)!=window_start){
         if(pkt_in_window!=0){
           last=(last+1)%win;
         }
         else{
-          A_packets[last];//the selected packet of the window
-          for (int i=0; i<20; i++){
-              A_packets[last].pi.payload[i] = n->message.data[i];
-            }
-          free(n);
-          A_packets[last].pi.seqnum = A_seqnum;
-          A_packets[last].pi.acknum = ackNum;
-          A_packets[last].pi.checksum = calcCkSm(&A_packets[last].pi);
-          A_seqnum++;
-          A_packets[last].timeover=curTime+TIMEOUT;
-          A_packets[last].ackNum=0;//set ackNum to not received
-          pkt_in_window++;//increase the number of packets in the window
-          printf("sending seq no:%d\n",A_packets[last].pi.seqnum);
-          tolayer3(A, A_packets[last].pi);
-          if(timerOff){
-            timerOff=FALSE;
-            printf("Timer on\n");
-            starttimer(A,INTERVAL);
-          }
-          return 0;
-        }
+         
+	  memcpy(A_packets[last].pi.payload, n->message.data);
+	  free(n);
+	  A_packets[last].pi.seqnum  sequence_A;
+	  A_packets[last].pi.acknum = ackNum;
+	  A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
+	  A_seqnum++;
+	  A_packets[last].timeover=curTime+30;
+	  A_packets[last].ackNum=0;//set ackNum to not received
+	  pkt_in_window++;//increase the number of packets in the window
+	  tolayer3(0, A_packets[last].pi);
+	  if(timerOff){
+	    timerOff=false;
+	    starttimer(A,INTERVAL);
+	  }
+          
+	}
+		 
       }
-      else{
-        return;
-      }
-    }
-    else{
-      return 0;
     }
   }
-  return;
 }
+     
+        
+
 
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
   struct packet packet;
 {
-
+  if(packet.checksum == sum_checksum(&packet)){
+    if(packet.acknum == A_packets[wi
+  }
 }
 
 /* called when sideA's timer goes off */
