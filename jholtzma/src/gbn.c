@@ -1,7 +1,10 @@
 #include "../include/simulator.h"
 
+
 #define NULL 0
+
 #define TIMEOUT 30.0
+
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
