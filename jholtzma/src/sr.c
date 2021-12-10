@@ -151,9 +151,51 @@ void A_init()
 
 /* called from layer 3, when a packet arrives for layer 4 at sideB*/
 void B_input(packet)
-  struct packet packet;
+  struct pkt packet;
 {
+  if(packet.checksum == calc_checksum(&packet)){
+    if(packet.seqnum != B_seqnum){
+      if(packet.seqnum>B_seqnum){
+        if(packet.seqnum <= B_seqnum + win){ 
+          for(int m=0; m < win;m++){
+            if(B_packets[m].timeover==packet.seqnum){
+              B_packets[m].pi=packet;
+              packet.acknum = packet.seqnum ; 
+              packet.checksum = calc_checksum(&packet);
+              tolayer3(B, packet);
+              break;
+            }
+          }
+        }
+      }
+      else{
+        packet.acknum = packet.seqnum ; 
+        packet.checksum = calc_checksum(&packet);
+        tolayer3(B, packet);
+      }
+    }
+    else{
+      B_seqnum += 1;
+      tolayer5(B, packet.payload);
+      packet.acknum = B_seqnum-1; /* resend the latest ACK */
+      packet.checksum = calc_checksum(&packet);
+      tolayer3(B, packet);
+      
+      B_packets[window_start_B].timeover= (B_seqnum) + win-1;
+      window_start_B =( window_start_B + 1)%win;
 
+      while(B_packets[window_start_B].pi.seqnum == B_seqnum){
+        tolayer5(B, B_packets[window_start_B].pi.payload);
+        B_seqnum=B_seqnum+1;
+        B_packets[window_start_B].timeover=(B_seqnum)+win-1;
+        window_start_B=(window_start_B+1)%win;
+      }
+    }
+  }
+  else{
+    printf("Packet is corrupted");
+    return;
+  }
 }
 
 /* the following rouytine will be called once (only) before any other */
