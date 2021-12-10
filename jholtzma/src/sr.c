@@ -20,6 +20,9 @@
 
 #define A  1
 #define B  2
+#define ACK 111
+#define TIMEOUT 30.0
+
 list ls; 
 
 int nil = 0;
@@ -60,7 +63,6 @@ float curTime=0;
 int waitng_ack=0;
 bool timerOff=true;
 
-int  A_seqnum =0;
 
 
 /* called from layer 5, passed the data to be sent to other side */
@@ -75,20 +77,19 @@ void A_output(msg)
     if(n != NULL){
       if(((last+1)%win)!=window_start){
         if(pkt_in_window!=0){
-          last=(last+1)%win;
+            last=(last+1)%win;
         }
         else{
-         
-	  memcpy(A_packets[last].pi.payload, n->message.data,20);
-	  free(n);
-	  A_packets[last].pi.seqnum  = sequence_A;
-	  A_packets[last].pi.acknum = ackNum;
-	  A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
-	  A_seqnum++;
-	  A_packets[last].timeover=curTime+30;
-	  A_packets[last].ackNum=0;//set ackNum to not received
-	  pkt_in_window++;//increase the number of packets in the window
-	  tolayer3(0, A_packets[last].pi);
+	  		memcpy(A_packets[last].pi.payload, n->message.data,20);
+	  		free(n);
+	  		A_packets[last].pi.seqnum  = sequence_A;
+	  		A_packets[last].pi.acknum = ackNum;
+	  		A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
+	  		sequence_A++;
+	  		A_packets[last].timeover=curTime+30;
+	  		A_packets[last].ackNum=0;//set ackNum to not received
+	  		pkt_in_window++;//increase the number of packets in the window
+	  		tolayer3(0, A_packets[last].pi);
 	  if(timerOff){
 	    timerOff=false;
 	    starttimer(A,duration);
@@ -102,14 +103,40 @@ void A_output(msg)
 }
      
         
-
+void set_packet(struct pkt *packet, 
+				int seqnum,
+				int acknum){
+		packet->seqnum = seqnum;
+		packet->acknum = acknum;
+		packet->checksum = sum_checksum(packet);
+}
 
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
   struct pkt packet;
 {
-  if(packet.checksum == sum_checksum(&packet)){
+	if(packet.checksum == sum_checksum(&packet)){
+		if (packet.acknum == A_packets[window_start].pi.seqnum){
+			A_packets[window_start].ackNum=1;
+			pkt_in_window--;
+			if (pkt_in_window == 0) {
+				window_start = (window_start+1)%win;
+				last = (last+1 % win);
+				if (ls.front != NULL) {
+					struct  sr_window *sr = &A_packets[last];
+					
+					
+					set_packet(&sr->pi,sequence_A,ACK);
+					sequence_A++;
+					sr->timeover = curTime + TIMEOUT; 
+					sr->ackNum = 0;
+					pkt_in_window++;
+					tolayer3(A,sr->pi);
+				}
+			}
+		}
   }
+
 }
 
 /* called when sideA's timer goes off */
@@ -141,10 +168,10 @@ void A_init()
   win = getwinsize();
   A_packets= malloc(sizeof(struct sr_window) * win);
   for(int i=0;i<win;i++){
-    A_packets[i].ackNum==0;
+    A_packets[i].ackNum=0;
   }
-  timerOff = ;
-  starttint duration);
+  timerOff = true;
+  starttimer(A,duration);
 }
 
 /* Note that with simplex transfer from a-to-sideB, there is no B_output() */
@@ -153,15 +180,15 @@ void A_init()
 void B_input(packet)
   struct pkt packet;
 {
-  if(packet.checksum == calc_checksum(&packet)){
-    if(packet.seqnum != B_seqnum){
-      if(packet.seqnum>B_seqnum){
-        if(packet.seqnum <= B_seqnum + win){ 
+  if(packet.checksum == sum_checksum(&packet)){
+    if(packet.seqnum != sequence_B){
+      if(packet.seqnum>sequence_B){
+        if(packet.seqnum <= sequence_B + win){ 
           for(int m=0; m < win;m++){
             if(B_packets[m].timeover==packet.seqnum){
               B_packets[m].pi=packet;
               packet.acknum = packet.seqnum ; 
-              packet.checksum = calc_checksum(&packet);
+              packet.checksum = sum_checksum(&packet);
               tolayer3(B, packet);
               break;
             }
@@ -170,24 +197,24 @@ void B_input(packet)
       }
       else{
         packet.acknum = packet.seqnum ; 
-        packet.checksum = calc_checksum(&packet);
+        packet.checksum = sum_checksum(&packet);
         tolayer3(B, packet);
       }
     }
     else{
-      B_seqnum += 1;
+      sequence_B += 1;
       tolayer5(B, packet.payload);
-      packet.acknum = B_seqnum-1; /* resend the latest ACK */
-      packet.checksum = calc_checksum(&packet);
+      packet.acknum = sequence_B-1; /* resend the latest ACK */
+      packet.checksum = sum_checksum(&packet);
       tolayer3(B, packet);
       
-      B_packets[window_start_B].timeover= (B_seqnum) + win-1;
+      B_packets[window_start_B].timeover= (sequence_B) + win-1;
       window_start_B =( window_start_B + 1)%win;
 
-      while(B_packets[window_start_B].pi.seqnum == B_seqnum){
+      while(B_packets[window_start_B].pi.seqnum == sequence_B){
         tolayer5(B, B_packets[window_start_B].pi.payload);
-        B_seqnum=B_seqnum+1;
-        B_packets[window_start_B].timeover=(B_seqnum)+win-1;
+        sequence_B++;
+        B_packets[window_start_B].timeover=(sequence_B)+win-1;
         window_start_B=(window_start_B+1)%win;
       }
     }
