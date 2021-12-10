@@ -161,8 +161,19 @@ void A_input(packet)
 			}
 			}
 		}
+		else if(packet.acknum > A_packets[window_start].pi.seqnum) {
+			int i = 0;
+			while (i!=last) {
+				struct sr_window *cur_pack = &A_packets[(i+1)+win];		
+				if (cur_pack->pi.seqnum == i ) { 
+					cur_pack->ackNum = 1; 
+					break;
+				}
+				i = (i + 1) % win;
+			}
+		}
 		else if(packet.acknum <= A_packets[window_start].pi.seqnum){
-			
+				
 		}
   }
 
