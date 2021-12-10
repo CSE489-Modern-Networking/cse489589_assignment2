@@ -76,7 +76,7 @@ void A_output(message)
 	if (window_start == last){
 		starttimer(A,TIMEOUT);
 	}
-	return 0 ;	
+	return  ;	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -153,7 +153,7 @@ printf("\n================================ A_timerinterrupt=====================
 void A_init()
 {
 	window_size = getwinsize();	
-	packets = malloc(window_size * sizeof(struct pkt));
+	packets = calloc(window_size , sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */

@@ -9,7 +9,10 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	5.9.0	/p5.9.20210905.0/
+A	gbn.c	/^#define A /;"	d	file:
 A	simulator.c	/^#define   A /;"	d	file:
+A	sr.c	/^#define A /;"	d	file:
+ACK	sr.c	/^#define ACK /;"	d	file:
 A_application	simulator.c	/^int A_application = 0;$/;"	v	typeref:typename:int
 A_init	abt.c	/^void A_init()$/;"	f	typeref:typename:void
 A_init	gbn.c	/^void A_init()$/;"	f	typeref:typename:void
@@ -19,13 +22,15 @@ A_input	gbn.c	/^void A_input(packet)$/;"	f
 A_input	sr.c	/^void A_input(packet)$/;"	f
 A_output	abt.c	/^void A_output(message)$/;"	f
 A_output	gbn.c	/^void A_output(message)$/;"	f
-A_output	sr.c	/^void A_output(message)$/;"	f
-A_seqnum	gbn.c	/^int A_seqnum = 0;$/;"	v	typeref:typename:int
+A_output	sr.c	/^void A_output(msg)$/;"	f
+A_packets	sr.c	/^struct sr_window *A_packets;$/;"	v	typeref:struct:sr_window *
 A_timerinterrupt	abt.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
 A_timerinterrupt	gbn.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
-A_timerinterrupt	sr.c	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
+A_timerinterrupt	sr.c	/^void A_timerinterrupt(){$/;"	f	typeref:typename:void
 A_transport	simulator.c	/^int A_transport = 0;$/;"	v	typeref:typename:int
+B	gbn.c	/^#define B /;"	d	file:
 B	simulator.c	/^#define   B /;"	d	file:
+B	sr.c	/^#define B /;"	d	file:
 B_application	simulator.c	/^int B_application = 0;$/;"	v	typeref:typename:int
 B_init	abt.c	/^void B_init()$/;"	f	typeref:typename:void
 B_init	gbn.c	/^void B_init()$/;"	f	typeref:typename:void
@@ -33,29 +38,43 @@ B_init	sr.c	/^void B_init()$/;"	f	typeref:typename:void
 B_input	abt.c	/^void B_input(packet)$/;"	f
 B_input	gbn.c	/^void B_input(packet)$/;"	f
 B_input	sr.c	/^void B_input(packet)$/;"	f
+B_packets	sr.c	/^struct sr_window *B_packets;$/;"	v	typeref:struct:sr_window *
 B_seqnum	gbn.c	/^int B_seqnum = 0;$/;"	v	typeref:typename:int
 B_transport	simulator.c	/^int B_transport = 0;$/;"	v	typeref:typename:int
+CHUNKSIZE	abt.c	/^#define CHUNKSIZE /;"	d	file:
+DEFAULT_ACK	abt.c	/^#define DEFAULT_ACK /;"	d	file:
 DEFAULT_ACK	gbn.c	/^#define DEFAULT_ACK /;"	d	file:
 FROM_LAYER3	simulator.c	/^#define  FROM_LAYER3 /;"	d	file:
 FROM_LAYER5	simulator.c	/^#define  FROM_LAYER5 /;"	d	file:
+IsWaiting_ack	abt.c	/^int IsWaiting_ack = 1; $/;"	v	typeref:typename:int
+IsWaiting_pkt	abt.c	/^int IsWaiting_pkt = 0; $/;"	v	typeref:typename:int
+NULL	gbn.c	/^#define NULL /;"	d	file:
 OFF	simulator.c	/^#define  OFF /;"	d	file:
 ON	simulator.c	/^#define  ON /;"	d	file:
+TICKER	sr.c	/^#define TICKER /;"	d	file:
+TIMEOUT	gbn.c	/^#define TIMEOUT /;"	d	file:
+TIMEOUT	sr.c	/^#define TIMEOUT /;"	d	file:
 TIMER_INTERRUPT	simulator.c	/^#define  TIMER_INTERRUPT /;"	d	file:
 TRACE	simulator.c	/^int TRACE = 1;             \/* for my debugging *\/$/;"	v	typeref:typename:int
+ackNum	sr.c	/^  int ackNum;$/;"	m	struct:sr_window	typeref:typename:int	file:
+ackNum	sr.c	/^int ackNum = 111;$/;"	v	typeref:typename:int
 append_list	list.c	/^void append_list(struct list *ls, struct msg *message){$/;"	f	typeref:typename:void
 application_msgs	simulator.c	/^}application_msgs[1000];$/;"	v	typeref:struct:msg_track[1000]
-checksum	gbn.c	/^int checksum = 0; $/;"	v	typeref:typename:int
 corruptprob	simulator.c	/^float corruptprob = 0.0;   \/* probability that one bit is packet is flipped *\/$/;"	v	typeref:typename:float
+curTime	sr.c	/^float curTime=0;$/;"	v	typeref:typename:float
 cur_msg_recv	simulator.c	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
 cur_msg_sent	simulator.c	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
+cur_pack	abt.c	/^struct pkt cur_pack;$/;"	v	typeref:struct:pkt
 cur_pack	gbn.c	/^struct pkt cur_pack;$/;"	v	typeref:struct:pkt
 delivered	simulator.c	/^  int delivered;$/;"	m	struct:msg_track	typeref:typename:int	file:
 display_usage	simulator.c	/^void display_usage(char *filename)$/;"	f	typeref:typename:void
+duration	sr.c	/^int duration = 1.0;$/;"	v	typeref:typename:int
 event	simulator.c	/^struct event {$/;"	s	file:
 eventity	simulator.c	/^   int eventity;           \/* entity where event occurs *\/$/;"	m	struct:event	typeref:typename:int	file:
 evlist	simulator.c	/^struct event *evlist = NULL;   \/* the event list *\/$/;"	v	typeref:struct:event *
 evtime	simulator.c	/^   float evtime;           \/* event time *\/$/;"	m	struct:event	typeref:typename:float	file:
 evtype	simulator.c	/^   int evtype;             \/* event type code *\/$/;"	m	struct:event	typeref:typename:int	file:
+false	abt.c	/^#define false /;"	d	file:
 generate_next_arrival	simulator.c	/^void generate_next_arrival()$/;"	f	typeref:typename:void
 get_sim_time	simulator.c	/^float get_sim_time()$/;"	f	typeref:typename:float
 getwinsize	simulator.c	/^int getwinsize()$/;"	f	typeref:typename:int
@@ -64,33 +83,61 @@ insertevent	simulator.c	/^void insertevent(p)$/;"	f
 isNumber	simulator.c	/^int isNumber(char *input)$/;"	f	typeref:typename:int
 jimsrand	simulator.c	/^float jimsrand()$/;"	f	typeref:typename:float
 lambda	simulator.c	/^float lambda = 0.0;        \/* arrival rate of messages from layer 5 *\/$/;"	v	typeref:typename:float
-last	gbn.c	/^int last;$/;"	v	typeref:typename:int
+last	gbn.c	/^int last = 0;$/;"	v	typeref:typename:int
+last	sr.c	/^int last=0;$/;"	v	typeref:typename:int
+last_B	sr.c	/^int last_B=0;$/;"	v	typeref:typename:int
 lossprob	simulator.c	/^float lossprob = 0.0;       \/* probability that a packet is dropped *\/$/;"	v	typeref:typename:float
 ls	abt.c	/^struct list ls;$/;"	v	typeref:struct:list
 ls	gbn.c	/^list ls; $/;"	v	typeref:typename:list
+ls	sr.c	/^list ls; $/;"	v	typeref:typename:list
+main	main.c	/^int main(){$/;"	f	typeref:typename:int
 main	simulator.c	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
 msg_chars	simulator.c	/^  char msg_chars[20];$/;"	m	struct:msg_track	typeref:typename:char[20]	file:
 msg_track	simulator.c	/^struct msg_track {$/;"	s	file:
 ncorrupt	simulator.c	/^int ncorrupt = 0;        \/* number corrupted by media*\/$/;"	v	typeref:typename:int
 next	simulator.c	/^   struct event *next;$/;"	m	struct:event	typeref:struct:event *	file:
+nextseq	gbn.c	/^int nextseq = 0;$/;"	v	typeref:typename:int
+nil	sr.c	/^int nil = 0;$/;"	v	typeref:typename:int
 nlost	simulator.c	/^int nlost = 0;              \/* number lost in media *\/$/;"	v	typeref:typename:int
 nsim	simulator.c	/^int nsim = 0;              \/* number of messages from 5 to 4 so far *\/$/;"	v	typeref:typename:int
 nsimmax	simulator.c	/^int nsimmax = 0;           \/* number of msgs to generate, then stop *\/$/;"	v	typeref:typename:int
 ntolayer3	simulator.c	/^int ntolayer3 = 0;        \/* number sent into layer 3 *\/$/;"	v	typeref:typename:int
 packets	gbn.c	/^struct pkt *packets;$/;"	v	typeref:struct:pkt *
-packets_in_window	gbn.c	/^int packets_in_window;$/;"	v	typeref:typename:int
+packets_in_window	gbn.c	/^int packets_in_window =0;$/;"	v	typeref:typename:int
+pi	sr.c	/^  struct pkt pi;\/\/packet item$/;"	m	struct:sr_window	typeref:struct:pkt	file:
+pkt_in_window	sr.c	/^int pkt_in_window=0;$/;"	v	typeref:typename:int
+pkt_in_window_B	sr.c	/^int pkt_in_window_B=0;$/;"	v	typeref:typename:int
 pktptr	simulator.c	/^   struct pkt *pktptr;     \/* ptr to packet (if any) assoc w\/ this event *\/$/;"	m	struct:event	typeref:struct:pkt *	file:
 pop_list	list.c	/^list_node *pop_list(struct list *ls){$/;"	f	typeref:typename:list_node *
 prev	simulator.c	/^   struct event *prev;$/;"	m	struct:event	typeref:struct:event *	file:
 printevlist	simulator.c	/^void printevlist()$/;"	f	typeref:typename:void
 read_arg_float	simulator.c	/^float read_arg_float(char c)$/;"	f	typeref:typename:float
 read_arg_int	simulator.c	/^int read_arg_int(char c)$/;"	f	typeref:typename:int
+sequence_A	abt.c	/^int sequence_A = 0; $/;"	v	typeref:typename:int
+sequence_A	sr.c	/^int sequence_A = 0;$/;"	v	typeref:typename:int
+sequence_B	abt.c	/^int sequence_B =0; $/;"	v	typeref:typename:int
+sequence_B	sr.c	/^int sequence_B = 0;$/;"	v	typeref:typename:int
+set_packet	sr.c	/^void set_packet(struct pkt *packet, $/;"	f	typeref:typename:void
+sideA	sr.c	/^int  sideA = 0;$/;"	v	typeref:typename:int
+sideB	sr.c	/^int  sideB = 1;$/;"	v	typeref:typename:int
+sr_window	sr.c	/^struct sr_window{$/;"	s	file:
 starttimer	simulator.c	/^void starttimer(AorB,increment)$/;"	f
+state	abt.c	/^int state = 0;$/;"	v	typeref:typename:int
 stoptimer	simulator.c	/^void stoptimer(AorB)$/;"	f
 sum_checksum	list.c	/^int sum_checksum(struct pkt *p){$/;"	f	typeref:typename:int
+temp	sr.c	/^int temp=0;$/;"	v	typeref:typename:int
 time	simulator.c	/^float time = 0.000;$/;"	v	typeref:typename:float
+timeover	sr.c	/^  int timeover;$/;"	m	struct:sr_window	typeref:typename:int	file:
+timerOff	sr.c	/^bool timerOff=true;$/;"	v	typeref:typename:bool
 tolayer3	simulator.c	/^void tolayer3(AorB,packet)$/;"	f
 tolayer5	simulator.c	/^void tolayer5(AorB,datasent)$/;"	f
-waiting_ack	gbn.c	/^int waiting_ack;$/;"	v	typeref:typename:int
+true	abt.c	/^#define true /;"	d	file:
+waiting_ack	gbn.c	/^int waiting_ack =0 ;$/;"	v	typeref:typename:int
+waitng_ack	sr.c	/^int waitng_ack=0;$/;"	v	typeref:typename:int
+win	sr.c	/^int win=0;$/;"	v	typeref:typename:int
 win_size	simulator.c	/^int win_size;$/;"	v	typeref:typename:int
 window_size	gbn.c	/^int window_size = 0; $/;"	v	typeref:typename:int
+window_start	abt.c	/^int window_start = 0;$/;"	v	typeref:typename:int
+window_start	gbn.c	/^int window_start = 0;$/;"	v	typeref:typename:int
+window_start	sr.c	/^int window_start = 0;$/;"	v	typeref:typename:int
+window_start_B	sr.c	/^int window_start_B = 0;$/;"	v	typeref:typename:int

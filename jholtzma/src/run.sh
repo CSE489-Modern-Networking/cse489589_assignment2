@@ -1,5 +1,4 @@
 cd ..
 make clean
 make
-cd ../grader
-sh run.sh
+./sr -s 1234 -w 50 -m 20 -l 0.1 -c 0.2 -t 50 -v 10
