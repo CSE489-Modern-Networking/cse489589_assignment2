@@ -1,6 +1,5 @@
 /********************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
-
    This code should be used for PA2, unidirectional data transfer 
    protocols (from sideA to sideB). Network properties:
    - one way network delay averages five time units (longer if there
@@ -18,28 +17,15 @@
 #include "stdlib.h"
 #include "stdbool.h"
 
-#define A  0
-#define B  1
-#define ACK 111
-#define TIMEOUT 30.0
-
-#define TICKER  30.0
-
-list ls; 
-
-int nil = 0;
+list ls;
+/* timeout for the timer */
+double timeOut = 30.0;
 int  sideA = 0;
 int  sideB = 1;
-/* timeout for the timer */
 int duration = 1.0;
 int ackNum = 111;
 
-
 /*end*/
-
-
-
-
 struct sr_window{
   int ackNum;
 
@@ -85,16 +71,16 @@ struct msg msg;
 	  	A_packets[last].pi.acknum = ackNum;
 	  	A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
       A_set(&A_packets[last]);
-	  	tolayer3(A, A_packets[last].pi);
+	  	tolayer3(sideA, A_packets[last].pi);
 	  	if(timerOff == true){
 	  	  timerOff=false;
-	  	  starttimer(A,duration);
+	  	  starttimer(sideA,duration);
 	  	}
       }
     }
   }
 }
-      
+
 void set_packet(struct pkt *packet,int seqnum,int acknum){
   packet->seqnum = seqnum;
   packet->acknum = acknum;
@@ -129,13 +115,13 @@ struct pkt packet;
       last = (last + 1) % win;
       if (ls.front == NULL){
         timerOff = true;
-        stoptimer(A);
+        stoptimer(sideA);
       }
       else{
         struct sr_window * sr = & A_packets[last];
-        set_packet( & sr -> pi, sequence_A, ACK);
+        set_packet( & sr -> pi, sequence_A, ackNum);
         A_set(sr);
-        tolayer3(A, sr -> pi);
+        tolayer3(sideA, sr -> pi);
       }
     }
   }
@@ -144,7 +130,7 @@ struct pkt packet;
 void A_set(struct sr_window *x){
   sequence_A++;
   x -> ackNum = 0;
-  x -> timeover = curTime + TICKER;
+  x -> timeover = curTime + timeOut;
   pkt_in_window++;
 }
 
@@ -167,9 +153,9 @@ void A_input_accumulate(){
     struct sr_window * last_pck = & (A_packets[last]);
     memcpy(last_pck -> pi.payload, n -> message.data, 20);
     free(n);
-    set_packet( & last_pck -> pi, sequence_A, ACK);
-    A_set(last_pck);
-    tolayer3(A, last_pck -> pi);
+    set_packet( & last_pck -> pi, sequence_A, ackNum);
+    set_A(last_pck);
+    tolayer3(sideA, last_pck -> pi);
   }
 }
 
@@ -180,20 +166,18 @@ void A_timerinterrupt(){
     int i=window_start;
     while(i!=last){
       if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
-
-        A_packets[i].timeover=curTime+TICKER;
+        A_packets[i].timeover=curTime+timeOut;
         tolayer3(sideA, A_packets[i].pi);
       }
       i=(i+1)%win;
     }
     if(A_packets[i].ackNum==0&& A_packets[i].timeover<curTime){
-      
-        A_packets[i].timeover=curTime+TICKER;
-        tolayer3(sideA, A_packets[window_start].pi);
+      A_packets[i].timeover=curTime+timeOut;
+      tolayer3(sideA, A_packets[window_start].pi);
     }
   }
   starttimer(sideA, duration);
-} 
+}
 
 /* the following routine will be called once (only) before any other */
 /* entity sideA routines are called. You can use it to do any initialization */
@@ -228,13 +212,13 @@ void B_input(packet)
     }
     else{
       sequence_B += 1;
-      tolayer5(B, packet.payload);
+      tolayer5(sideB, packet.payload);
       set_B_input(packet,sequence_B-1);
       B_packets[window_start_B].timeover= (sequence_B) + win-1;
       window_start_B =( window_start_B + 1)%win;
 
       while(B_packets[window_start_B].pi.seqnum == sequence_B){
-        tolayer5(B, B_packets[window_start_B].pi.payload);
+        tolayer5(sideB, B_packets[window_start_B].pi.payload);
         sequence_B++;
         B_packets[window_start_B].timeover=(sequence_B)+win-1;
         window_start_B=(window_start_B+1)%win;
@@ -246,11 +230,11 @@ void B_input(packet)
 void set_B_input(struct pkt packet, int y){
   packet.acknum = y ; 
   packet.checksum = sum_checksum(&packet);
-  tolayer3(B, packet);
+  tolayer3(sideB, packet);
 }
+
 /* the following rouytine will be called once (only) before any other */
 /* entity sideB routines are called. You can use it to do any initialization */
-
 void B_init(){
   init_all(1);
 }
