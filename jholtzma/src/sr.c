@@ -129,25 +129,7 @@ struct pkt packet;
   else if (packet.acknum == A_packets[window_start].pi.seqnum) {
     A_packets[window_start].ackNum = 1;
     pkt_in_window--;
-    if (pkt_in_window == 0) {
-      window_start = (window_start + 1) % win;
-      last = (last + 1) % win;
-      if (ls.front != NULL) {
-        struct sr_window * sr = & A_packets[last];
-
-        set_packet( & sr -> pi, sequence_A, ACK);
-
-        sequence_A++;
-        sr -> timeover = curTime + TIMEOUT;
-        sr -> ackNum = 0;
-        pkt_in_window++;
-        tolayer3(A, sr -> pi);
-      } else {
-
-        timerOff = true;
-        stoptimer(A);
-      }
-    } else {
+    if (pkt_in_window != 0){
       int i = window_start;
       while (i != last) {
         int new_index = (i + 1) % win;
@@ -156,7 +138,6 @@ struct pkt packet;
         }
         pkt_in_window--;
         i = new_index;
-
       }
       window_start = (i + 1) % win;
       if (pkt_in_window == 0) {
@@ -175,8 +156,27 @@ struct pkt packet;
         tolayer3(A, last_pck -> pi);
       }
     }
+    else{
+      window_start = (window_start + 1) % win;
+      last = (last + 1) % win;
+      if (ls.front == NULL) {
+        timerOff = true;
+        stoptimer(A);
+      }
+      else {
+        struct sr_window * sr = & A_packets[last];
+        set_packet( & sr -> pi, sequence_A, ACK);
+        sequence_A++;
+        sr -> timeover = curTime + TIMEOUT;
+        sr -> ackNum = 0;
+        pkt_in_window++;
+        tolayer3(A, sr -> pi);
+      }
+    }
   }
 }
+
+
 
 /* called when sideA's timer goes off */
 void A_timerinterrupt(){
