@@ -1,15 +1,3 @@
-#include "../include/simulator.h"
-
-
-#define NULL 0
-
-
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
-#define A 0
-#define B 1
-
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
 
@@ -24,29 +12,32 @@
 **********************************************************************/
 
 /********* STUDENTS WRITE THE NEXT SEVEN ROUTINES *********/
-
 /* called from layer 5, passed the data to be sent to other side */
-list ls; 
+#include "../include/simulator.h"
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
+#include <stddef.h>
 
-struct pkt cur_pack;
+list ls; 
+struct pkt currentPacketInfer;
 struct pkt *packets;
 
-int window_size = 0; 
-int packets_in_window =0;
+int sideA = 0
+int sideB = 1
+int winSize = 0; 
+int winPacketInterval =0;
 int last = 0;
-int waiting_ack =0 ;
-int nextseq = 0;
-
-int window_start = 0;
-
-int B_seqnum = 0;
+int next = 0;
+int start = 0;
+int seqAckB = 0;
 
 void A_output(message)
   struct msg message;
 {
 
 	append_list(&ls,&message);
-	if (packets_in_window == window_size) {
+	if (winPacketInterval == winSize) {
 		printf("FULL");
 		return;
 	} 
@@ -56,23 +47,27 @@ void A_output(message)
 		printf("message is NULL");
 		return;
 	}
-	if ((last+1)%window_size == window_start) {
+	if ((last+1)%winSize == start) {
 		return;
-	}else if(packets_in_window != 0) {
-		last = (last + 1) % window_size;
+	}else if(winPacketInterval != 0) {
+		last = (last + 1) % winSize;
 	}
 	memcpy(packets[last].payload, n->message.data,20);
+	//packets[last].payload[19] = n->message.data[19];
 	free(n);
-	packets[last].seqnum = nextseq;
+	packets[last].seqnum = next;
+	packets[last].acknum = 0;
 	packets[last].checksum  = sum_checksum(&packets[last]); 
-	nextseq++;
+	next++;
 
-	packets_in_window++;
-	tolayer3(A,packets[last]);
-	
-	starttimer(A,30);
-	
-}	
+	winPacketInterval++;
+	tolayer3(sideA,packets[last]);
+	if (start == last){
+		starttimer(sideA,30);
+	}
+	return  ;	
+}
+
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
   struct pkt packet;
@@ -80,67 +75,69 @@ void A_input(packet)
 	if (packet.checksum != sum_checksum(&packet))  {
 		return;
 	}
-	if(packet.acknum != packets[window_start].seqnum) {
+	if(packet.acknum != packets[start].seqnum) {
 		return;
 	}
-	packets[window_start].seqnum = -1;
-	stoptimer(A);
-	packets_in_window--;
-	if (packets_in_window == 0) {
+	packets[start].seqnum = -1;
+	stoptimer(sideA);
+	winPacketInterval--;
+	if (winPacketInterval == 0) {
 		list_node *n = pop_list(&ls);
 		while(n!=NULL){
 				
 			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
-			packets[last].seqnum = nextseq;
+			packets[last].seqnum = next;
+			packets[last].acknum = 0;
 			packets[last].checksum = sum_checksum(&packets[last]);
-			nextseq++;
+			next++;
 		}
 	}
 	else {
-		window_start = (window_start+1)%window_size; 
+		start = (start+1)%winSize; 
 		list_node *n = pop_list(&ls);
 		if (n!=NULL){
-			last = (last + 1) %window_size;
+			last = (last + 1) %winSize;
 			//packets[last];
 			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 
-			packets[last].seqnum = nextseq;
+			packets[last].seqnum = next;
+			packets[last].acknum = 0;
 			packets[last].checksum = sum_checksum(&packets[last]);
-			nextseq++;
+			next++;
 
-			packets_in_window++;
-			tolayer3(A, packets[last]);
+			winPacketInterval++;
+			tolayer3(sideA, packets[last]);
 		}
 	}
-	
-	starttimer(A,30);
-	
+	if (start != last || winPacketInterval == 1) {
+		starttimer(sideA,30);
+	}
 }
 
 /* called when A's timer goes off */
 void A_timerinterrupt()
 {
-
-    
-    for (int i  =window_start;i != last; i=(i+1)%window_size )
+    int i ;
+    for ( i  =start;i != last; i=(i+1)%winSize )
       {
-            tolayer3(A, packets[i]);
+            tolayer3(sideA, packets[i]);
       }
-     
+     tolayer3(sideA, packets[i]);
  
-    
-     starttimer(A, 30);
-     
+    if(start != last || winPacketInterval==1)
+      {
+        starttimer(sideA, 30);
+      }
 }
 
 /* the following routine will be called once (only) before any other */
 /* entity A routines are called. You can use it to do any initialization */
 void A_init()
 {
-	window_size = getwinsize();	
-	packets = calloc(window_size , sizeof(struct pkt));
+	winSize = getwinsize();	
+	packets = calloc(winSize , sizeof(struct pkt));
 }
 
 /* Note that with simplex transfer from a-to-B, there is no B_output() */
@@ -150,17 +147,16 @@ void B_input(packet)
   struct pkt packet;
 {
 	if(packet.checksum != sum_checksum(&packet)) {
-		printf("packed_error");
 		return;
 	}
-	if (packet.seqnum == B_seqnum) {
-		++B_seqnum ;
+	if (packet.seqnum == seqAckB) {
+		++seqAckB ;
 		tolayer5(B,packet.payload);
 	}
-	else if (packet.seqnum < B_seqnum) {
+	else if (packet.seqnum < seqAckB) {
 		packet.acknum = packet.seqnum;
 		packet.checksum = sum_checksum(&packet);
-		tolayer3(B,packet);
+		tolayer3(sideB,packet);
 	}
 }
 
@@ -168,5 +164,6 @@ void B_input(packet)
 /* entity B routines are called. You can use it to do any initialization */
 void B_init()
 {
-
+	return;
 }
+
