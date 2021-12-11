@@ -131,22 +131,18 @@ void A_input(packet)
 void A_timerinterrupt()
 {
 
-printf("\n================================ A_timerinterrupt===================================\n");
-	int i  =window_start;
-	while ( i != last  )
-  	{
-		printf("sending seq no:%d\n",packets[i].seqnum);
-  	  	tolayer3(A, packets[i]);
-		i=(i+1)%window_size;
-  	}
-   	printf("sending seq no:%d\n",packets[i].seqnum);
- 	tolayer3(A, packets[i]);
+    int i ;
+    for ( i  =window_start;i != last; i=(i+1)%window_size )
+      {
+            tolayer3(A, packets[i]);
+      }
+     tolayer3(A, packets[i]);
  
-	if(window_start != last || packets_in_window==1)
-  	{
-		starttimer(A, TIMEOUT);
-  	}
-}  
+    if(window_start != last || packets_in_window==1)
+      {
+        starttimer(A, TIMEOUT);
+      }
+}
 
 /* the following routine will be called once (only) before any other */
 /* entity A routines are called. You can use it to do any initialization */
