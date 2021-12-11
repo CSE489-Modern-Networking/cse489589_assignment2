@@ -154,7 +154,7 @@ void A_input_accumulate(){
     memcpy(last_pck -> pi.payload, n -> message.data, 20);
     free(n);
     set_packet( & last_pck -> pi, sequence_A, ackNum);
-    set_A(last_pck);
+    A_set(last_pck);
     tolayer3(sideA, last_pck -> pi);
   }
 }
