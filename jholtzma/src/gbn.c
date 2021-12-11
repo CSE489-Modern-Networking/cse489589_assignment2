@@ -110,9 +110,9 @@ void A_input(packet)
 			tolayer3(sideA, packets[last]);
 		}
 	}
-	if (start != last || winPacketInterval == 1) {
-		starttimer(sideA,30);
-	}
+	
+	starttimer(sideA,30);
+	
 }
 
 /* called when A's timer goes off */
