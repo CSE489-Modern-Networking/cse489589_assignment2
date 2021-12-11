@@ -3,7 +3,6 @@
 
 #define NULL 0
 
-#define TIMEOUT 30.0
 
 #include "stdio.h"
 #include "string.h"
@@ -74,7 +73,7 @@ void A_output(message)
 	packets_in_window++;
 	tolayer3(A,packets[last]);
 	if (window_start == last){
-		starttimer(A,TIMEOUT);
+		starttimer(A,30);
 	}
 	return  ;	
 }
@@ -123,7 +122,7 @@ void A_input(packet)
 		}
 	}
 	if (window_start != last || packets_in_window == 1) {
-		starttimer(A,TIMEOUT);
+		starttimer(A,30);
 	}
 }
 
@@ -140,7 +139,7 @@ void A_timerinterrupt()
  
     if(window_start != last || packets_in_window==1)
       {
-        starttimer(A, TIMEOUT);
+        starttimer(A, 30);
       }
 }
 
