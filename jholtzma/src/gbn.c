@@ -7,7 +7,6 @@
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
-#define DEFAULT_ACK 111
 #define A 0
 #define B 1
 
@@ -63,21 +62,17 @@ void A_output(message)
 		last = (last + 1) % window_size;
 	}
 	memcpy(packets[last].payload, n->message.data,20);
-	//packets[last].payload[19] = n->message.data[19];
 	free(n);
 	packets[last].seqnum = nextseq;
-	packets[last].acknum = DEFAULT_ACK;
 	packets[last].checksum  = sum_checksum(&packets[last]); 
 	nextseq++;
 
 	packets_in_window++;
 	tolayer3(A,packets[last]);
-	if (window_start == last){
-		starttimer(A,30);
-	}
-	return  ;	
-}
-
+	
+	starttimer(A,30);
+	
+}	
 /* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
   struct pkt packet;
@@ -98,7 +93,6 @@ void A_input(packet)
 			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 			packets[last].seqnum = nextseq;
-			packets[last].acknum = DEFAULT_ACK;
 			packets[last].checksum = sum_checksum(&packets[last]);
 			nextseq++;
 		}
@@ -113,7 +107,6 @@ void A_input(packet)
 			free(n);
 
 			packets[last].seqnum = nextseq;
-			packets[last].acknum = DEFAULT_ACK;
 			packets[last].checksum = sum_checksum(&packets[last]);
 			nextseq++;
 
@@ -121,26 +114,25 @@ void A_input(packet)
 			tolayer3(A, packets[last]);
 		}
 	}
-	if (window_start != last || packets_in_window == 1) {
-		starttimer(A,30);
-	}
+	
+	starttimer(A,30);
+	
 }
 
 /* called when A's timer goes off */
 void A_timerinterrupt()
 {
 
-    int i ;
-    for ( i  =window_start;i != last; i=(i+1)%window_size )
+    
+    for (int i  =window_start;i != last; i=(i+1)%window_size )
       {
             tolayer3(A, packets[i]);
       }
-     tolayer3(A, packets[i]);
+     
  
-    if(window_start != last || packets_in_window==1)
-      {
-        starttimer(A, 30);
-      }
+    
+     starttimer(A, 30);
+     
 }
 
 /* the following routine will be called once (only) before any other */
