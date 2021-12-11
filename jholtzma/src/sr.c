@@ -117,12 +117,14 @@ struct pkt packet;
   }
   else if (packet.acknum > A_packets[window_start].pi.seqnum) {
     int i = window_start;
-    struct sr_window * cur_pack = & A_packets[(i + 1) + win];
-    while ((i != last) || (cur_pack -> pi.seqnum != packet.acknum)){
-      cur_pack = & A_packets[(i + 1) + win];
+    while (i != last) {
+      struct sr_window * cur_pack = & A_packets[(i + 1) + win];
+      if (cur_pack -> pi.seqnum == packet.acknum) {
+        cur_pack -> ackNum = 1;
+        break;
+      }
       i = (i + 1) % win;
     }
-    cur_pack -> ackNum = 1;
   }
   else if (packet.acknum == A_packets[window_start].pi.seqnum) {
     A_packets[window_start].ackNum = 1;
