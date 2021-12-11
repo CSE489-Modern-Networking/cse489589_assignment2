@@ -197,13 +197,8 @@ void A_timerinterrupt(){
 
 /* the following routine will be called once (only) before any other */
 /* entity sideA routines are called. You can use it to do any initialization */
-void A_init()
-{
-  win = getwinsize();
-  A_packets= calloc(win,sizeof(struct sr_window));
-  for(int i=0;i<win;i++){
-    A_packets[i].ackNum==0;
-  }
+void A_init(){
+  init_all(0);
   timerOff = false;
   starttimer(0,duration);
 }
@@ -255,13 +250,26 @@ void set_B_input(struct pkt packet, int y){
 }
 /* the following rouytine will be called once (only) before any other */
 /* entity sideB routines are called. You can use it to do any initialization */
-void B_init()
-{
-  win = getwinsize();
-    B_packets= calloc(win,sizeof(struct sr_window) );
-    for(int i=0;i<win;i++)
-    {
-      B_packets[i].timeover=i;//this is the sequence number here
-    }
 
+void B_init(){
+  init_all(1);
+}
+
+void init_all(int flag){
+  win = getwinsize();
+  if(flag == 1){
+    B_packets = calloc(win,sizeof(struct sr_window));
+  }
+  else{
+    A_packets = calloc(win,sizeof(struct sr_window));
+  }
+  B_packets = calloc(win,sizeof(struct sr_window));
+  for(int i=0;i<win;i++){
+    if(flag == 1){
+      B_packets[i].timeover=i;
+    }
+    else{
+      A_packets[i].ackNum==0;
+    }
+  }
 }
