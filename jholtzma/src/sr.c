@@ -142,7 +142,7 @@ void A_input_accumulate(){
     memcpy(last_pck -> pi.payload, n -> message.data, 20);
     free(n);
     set_packet( & last_pck -> pi, Aseqc, ackNum);
-    A_set(last_pck);
+    set_A(last_pck);
     tolayer3(sideA, last_pck -> pi);
   }
 }
@@ -153,18 +153,19 @@ void A_timerinterrupt(){
   if(pkInAWin != 0){
     int i=stWinA;
     while(i!=LST){
-      if(pktA[i].ackNum==0&& pktA[i].timeOver<curTime){
-        pktA[i].timeOver=curTime+timeOut;
-        tolayer3(sideA, pktA[i].pi);
-      }
+      helperATimer(i);
       i=(i+1)%win;
     }
-    if(pktA[i].ackNum==0&& pktA[i].timeOver<curTime){
-      pktA[i].timeOver=curTime+timeOut;
-      tolayer3(sideA, pktA[stWinA].pi);
-    }
+    helperATimer(i);
   }
   starttimer(sideA, duration);
+}
+
+void helperATimer(int i){
+  if(pktA[i].ackNum==0&& pktA[i].timeOver<curTime){
+    pktA[i].timeOver=curTime+timeOut;
+    tolayer3(sideA, pktA[stWinA].pi);
+  }
 }
 
 /* the following routine will be called once (only) before any other */
