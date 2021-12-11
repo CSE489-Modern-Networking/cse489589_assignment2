@@ -23,14 +23,14 @@ list ls;
 struct pkt currentPacketInfer;
 struct pkt *packets;
 
-int sideA = 0
-int sideB = 1
+int sideA;
+int sideB;
 int winSize = 0; 
 int winPacketInterval =0;
 int last = 0;
 int next = 0;
 int start = 0;
-int seqAckB = 0;
+int seqAckB;
 
 void A_output(message)
   struct msg message;
@@ -62,10 +62,9 @@ void A_output(message)
 
 	winPacketInterval++;
 	tolayer3(sideA,packets[last]);
-	if (start == last){
-		starttimer(sideA,30);
-	}
-	return  ;	
+	
+	starttimer(sideA,30);
+	
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -119,17 +118,14 @@ void A_input(packet)
 /* called when A's timer goes off */
 void A_timerinterrupt()
 {
-    int i ;
-    for ( i  =start;i != last; i=(i+1)%winSize )
+    
+    for (int i  =start;i != last; i=(i+1)%winSize )
       {
             tolayer3(sideA, packets[i]);
       }
-     tolayer3(sideA, packets[i]);
- 
-    if(start != last || winPacketInterval==1)
-      {
-        starttimer(sideA, 30);
-      }
+   
+    starttimer(sideA, 30);
+      
 }
 
 /* the following routine will be called once (only) before any other */
@@ -137,6 +133,7 @@ void A_timerinterrupt()
 void A_init()
 {
 	winSize = getwinsize();	
+	sideA = 0;
 	packets = calloc(winSize , sizeof(struct pkt));
 }
 
@@ -164,6 +161,8 @@ void B_input(packet)
 /* entity B routines are called. You can use it to do any initialization */
 void B_init()
 {
+	seqAckB = 0;
+	sideB = 0;
 	return;
 }
 
