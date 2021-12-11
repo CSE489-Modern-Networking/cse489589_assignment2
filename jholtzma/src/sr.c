@@ -151,7 +151,6 @@ struct pkt packet;
     }
   }
 }
-
 void A_input_accumulate(){
   int i = window_start;
   while (i != last){
@@ -166,18 +165,16 @@ void A_input_accumulate(){
   if (pkt_in_window == 0){
     last = window_start;
   }
-  struct list_node * n = pop_list( & ls);
-  if (n != NULL){
-    struct sr_window * last_pck = & (A_packets[last]);
-    memcpy(last_pck -> pi.payload, n -> message.data, 20);
-    free(n);
-    set_packet( & last_pck -> pi, sequence_A, ACK);
-    sequence_A++;
-    last_pck -> ackNum = 0;
-    last_pck -> timeover = curTime + TICKER;
-    pkt_in_window++;
-    tolayer3(A, last_pck -> pi);
-  }
+  struct list_node * n = pop_list( &ls);
+  struct sr_window * last_pck = & (A_packets[last]);
+  memcpy(last_pck -> pi.payload, n -> message.data, 20);
+  free(n);
+  set_packet( & last_pck -> pi, sequence_A, ACK);
+  sequence_A++;
+  last_pck -> ackNum = 0;
+  last_pck -> timeover = curTime + TICKER;
+  pkt_in_window++;
+  tolayer3(A, last_pck -> pi);
 }
 
 /* called when sideA's timer goes off */
