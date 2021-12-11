@@ -228,27 +228,20 @@ void B_input(packet)
           for(int m=0; m < win;m++){
             if(B_packets[m].timeover==packet.seqnum){
               B_packets[m].pi=packet;
-              packet.acknum = packet.seqnum ; 
-              packet.checksum = sum_checksum(&packet);
-              tolayer3(B, packet);
+              set_B_input(packet,sum_checksum(&packet));
               break;
             }
           }
         }
       }
       else{
-        packet.acknum = packet.seqnum ; 
-        packet.checksum = sum_checksum(&packet);
-        tolayer3(B, packet);
+        set_B_input(packet,sum_checksum(&packet));
       }
     }
     else{
       sequence_B += 1;
       tolayer5(B, packet.payload);
-      packet.acknum = sequence_B-1; /* resend the latest ACK */
-      packet.checksum = sum_checksum(&packet);
-      tolayer3(B, packet);
-      
+      set_B_input(packet,sequence_B-1);
       B_packets[window_start_B].timeover= (sequence_B) + win-1;
       window_start_B =( window_start_B + 1)%win;
 
@@ -260,12 +253,13 @@ void B_input(packet)
       }
     }
   }
-  else{
-    printf("Packet is corrupted");
-    return;
-  }
 }
 
+void set_B_input(struct pkt packet, int y){
+  packet.acknum = y ; 
+  packet.checksum = sum_checksum(&packet);
+  tolayer3(B, packet);
+}
 /* the following rouytine will be called once (only) before any other */
 /* entity sideB routines are called. You can use it to do any initialization */
 void B_init()
