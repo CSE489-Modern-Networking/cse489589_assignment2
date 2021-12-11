@@ -13,6 +13,7 @@
 
 /********* STUDENTS WRITE THE NEXT SEVEN ROUTINES *********/
 /* called from layer 5, passed the data to be sent to other side */
+// Our group have read and understood the course's academic intergrity 
 #include "../include/simulator.h"
 #include "stdio.h"
 #include "string.h"
@@ -23,14 +24,14 @@ list ls;
 struct pkt currentPacketInfer;
 struct pkt *packets;
 
-int sideA;
-int sideB;
+int sideA = 0;
+int sideB = 1;
 int winSize = 0; 
 int winPacketInterval =0;
 int last = 0;
 int next = 0;
 int start = 0;
-int seqAckB;
+int seqAckB = 0;
 
 void A_output(message)
   struct msg message;
@@ -38,7 +39,7 @@ void A_output(message)
 
 	append_list(&ls,&message);
 	if (winPacketInterval == winSize) {
-		printf("FULL");
+		
 		return;
 	} 
 	
@@ -53,7 +54,7 @@ void A_output(message)
 		last = (last + 1) % winSize;
 	}
 	memcpy(packets[last].payload, n->message.data,20);
-	//packets[last].payload[19] = n->message.data[19];
+	
 	free(n);
 	packets[last].seqnum = next;
 	packets[last].acknum = 0;
@@ -62,8 +63,9 @@ void A_output(message)
 
 	winPacketInterval++;
 	tolayer3(sideA,packets[last]);
+	starttimer(sideA, 30);
 	
-	starttimer(sideA,30);
+	
 	
 }
 
@@ -97,7 +99,7 @@ void A_input(packet)
 		list_node *n = pop_list(&ls);
 		if (n!=NULL){
 			last = (last + 1) %winSize;
-			//packets[last];
+			
 			memcpy(packets[last].payload,n->message.data,20);
 			free(n);
 
@@ -111,7 +113,9 @@ void A_input(packet)
 		}
 	}
 	
-	starttimer(sideA,30);
+	starttimer(sideA, 30);
+	
+	
 	
 }
 
@@ -119,7 +123,7 @@ void A_input(packet)
 void A_timerinterrupt()
 {
     
-    for (int i  =start;i != last; i=(i+1)%winSize )
+    for (int i  = start;i != last; i=(i+1)%winSize )
       {
             tolayer3(sideA, packets[i]);
       }
@@ -133,7 +137,7 @@ void A_timerinterrupt()
 void A_init()
 {
 	winSize = getwinsize();	
-	sideA = 0;
+	
 	packets = calloc(winSize , sizeof(struct pkt));
 }
 
@@ -147,8 +151,8 @@ void B_input(packet)
 		return;
 	}
 	if (packet.seqnum == seqAckB) {
-		++seqAckB ;
-		tolayer5(B,packet.payload);
+		++seqAckB;
+		tolayer5(sideB,packet.payload);
 	}
 	else if (packet.seqnum < seqAckB) {
 		packet.acknum = packet.seqnum;
@@ -161,8 +165,6 @@ void B_input(packet)
 /* entity B routines are called. You can use it to do any initialization */
 void B_init()
 {
-	seqAckB = 0;
-	sideB = 0;
-	return;
+	
+	
 }
-
