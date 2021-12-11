@@ -68,9 +68,8 @@ bool timerOff=true;
 
 /* called from layer 5, passed the data to be sent to other side */
 void A_output(msg)
-     struct msg msg;
+struct msg msg;
 {
-  
   append_list(&ls, &msg);
   // check if the window is full
   if(pkt_in_window != win){
@@ -85,10 +84,7 @@ void A_output(msg)
 	  	A_packets[last].pi.seqnum  = sequence_A;
 	  	A_packets[last].pi.acknum = ackNum;
 	  	A_packets[last].pi.checksum = sum_checksum(&A_packets[last].pi);
-	  	sequence_A++;
-	  	A_packets[last].timeover=curTime+TICKER;
-	  	A_packets[last].ackNum=0;//set ackNum to not received
-	  	pkt_in_window++;//increase the number of packets in the window
+      A_set(&A_packets[last]);
 	  	tolayer3(A, A_packets[last].pi);
 	  	if(timerOff == true){
 	  	  timerOff=false;
@@ -98,17 +94,13 @@ void A_output(msg)
     }
   }
 }
-     
-        
-void set_packet(struct pkt *packet, 
-				int seqnum,
-				int acknum){
-		packet->seqnum = seqnum;
-		packet->acknum = acknum;
-		packet->checksum = sum_checksum(packet);
+      
+void set_packet(struct pkt *packet,int seqnum,int acknum){
+  packet->seqnum = seqnum;
+  packet->acknum = acknum;
+  packet->checksum = sum_checksum(packet);
 }
 
-/* called from layer 3, when a packet arrives for layer 4 */
 void A_input(packet)
 struct pkt packet; 
 {
@@ -142,15 +134,20 @@ struct pkt packet;
       else{
         struct sr_window * sr = & A_packets[last];
         set_packet( & sr -> pi, sequence_A, ACK);
-        sequence_A++;
-        sr -> timeover = curTime + TIMEOUT;
-        sr -> ackNum = 0;
-        pkt_in_window++;
+        A_set(sr);
         tolayer3(A, sr -> pi);
       }
     }
   }
 }
+
+void A_set(struct sr_window *x){
+  sequence_A++;
+  x -> ackNum = 0;
+  x -> timeover = curTime + TICKER;
+  pkt_in_window++;
+}
+
 void A_input_accumulate(){
   int i = window_start;
   while (i != last){
@@ -166,15 +163,14 @@ void A_input_accumulate(){
     last = window_start;
   }
   struct list_node * n = pop_list( &ls);
-  struct sr_window * last_pck = & (A_packets[last]);
-  memcpy(last_pck -> pi.payload, n -> message.data, 20);
-  free(n);
-  set_packet( & last_pck -> pi, sequence_A, ACK);
-  sequence_A++;
-  last_pck -> ackNum = 0;
-  last_pck -> timeover = curTime + TICKER;
-  pkt_in_window++;
-  tolayer3(A, last_pck -> pi);
+  if (n != NULL){
+    struct sr_window * last_pck = & (A_packets[last]);
+    memcpy(last_pck -> pi.payload, n -> message.data, 20);
+    free(n);
+    set_packet( & last_pck -> pi, sequence_A, ACK);
+    set_A(last_pck);
+    tolayer3(A, last_pck -> pi);
+  }
 }
 
 /* called when sideA's timer goes off */
