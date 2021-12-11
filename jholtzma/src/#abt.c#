@@ -24,10 +24,8 @@
 
  
 struct pkt cur_pack;
-#define CHUNKSIZE 20
 struct list ls;
 int window_start = 0;
-#define DEFAULT_ACK 111;
 int sequence_A; 
 int IsWaiting_pkt = 0; 
 int IsWaiting_ack = 1; 
@@ -42,9 +40,10 @@ void A_output(message)
   if(state  == IsWaiting_pkt){
     state = IsWaiting_ack;   
     struct list_node *n = pop_list(&ls); 
+
     memcpy(cur_pack.payload,n->message.data,20);
     free(n);
-    //cur_pack.seqnum = sequence_A;
+    cur_pack.seqnum = sequence_A;
     cur_pack.checksum = sum_checksum(&cur_pack); 
     tolayer3(0,cur_pack); 
     starttimer(0,rtt);
